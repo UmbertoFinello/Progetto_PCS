@@ -1,5 +1,5 @@
-#ifndef __EMPTY_H
-#define __EMPTY_H
+#ifndef __DELAUNAY_H
+#define __DELAUNAY_H
 
 #include <iostream>
 
@@ -12,4 +12,4 @@ namespace ProjectLibrary
   };
 }
 
-#endif // __EMPTY_H
+#endif // __DELAUNAY_H
