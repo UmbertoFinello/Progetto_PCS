@@ -1,10 +1,13 @@
 #include "Delaunay_class.hpp"
 
+
 int main()
 {
-  ProjectLibrary::Empty empty;
+  //string InputFileName = "./Test1.csv";
 
-  empty.Show();
+
+  //InputFileName = "./Test2.csv";
+
 
   return 0;
 }
