@@ -15,6 +15,7 @@ namespace ProjectLibrary
     {
     friend class Lato;
     friend class Triangolo;
+    friend class Mesh;
     protected:
         unsigned int _id;
         double _x;
@@ -29,6 +30,7 @@ namespace ProjectLibrary
     {
     friend class Punto;
     friend class Triangolo;
+    friend class Mesh;
     protected:
         unsigned int _id;
         Punto _p1;
@@ -41,20 +43,20 @@ namespace ProjectLibrary
 
     class Triangolo
     {
-    friend class Punto;
-    friend class Lato;
+    friend class Mesh;
     protected:
         vector<Punto> _vertici;
         int _id;
         vector<Lato> _lati;
     public:
-        Triangolo(vector<Punto>& v, unsigned int identificatore, const vector<Lato>& l);
+        Triangolo(Punto& p1, Punto& p2, Punto& p3, unsigned int& identificatore, vector<Lato>& l);
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
     };
 
     class Mesh
     {
+    friend class IOMesh;
     protected:
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
