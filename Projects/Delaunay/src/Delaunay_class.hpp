@@ -11,6 +11,7 @@ using namespace Eigen;
 
 namespace ProjectLibrary
 {
+
     class Punto
     {
     friend class Lato;
@@ -23,6 +24,7 @@ namespace ProjectLibrary
     public:
         Punto(unsigned int& id , double& x, double& y);
         Punto(const Punto& p);
+        string Show();
     };
 
 
@@ -38,11 +40,12 @@ namespace ProjectLibrary
         double _length;
     public:
         Lato(unsigned int& id , Punto& p1, Punto& p2);
-
+        string Show();
     };
 
     class Triangolo
     {
+
     friend class Mesh;
     protected:
         vector<Punto> _vertici;
@@ -52,10 +55,13 @@ namespace ProjectLibrary
         Triangolo(Punto& p1, Punto& p2, Punto& p3, unsigned int& identificatore, vector<Lato>& l);
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
+        string Show();
     };
+
 
     class Mesh
     {
+
     friend class IOMesh;
     protected:
         vector<Triangolo> _listaTriangoli;
@@ -64,15 +70,18 @@ namespace ProjectLibrary
         //MatrixXd<unsigned int> _adiacenza;
     public:
         Mesh(const vector<Punto>& listaPunti , string OutFilePath);
+        array<unsigned int, 2> DentroMesh(const Punto p);
     };
 
 
     class IOMesh
     {
-    public:
-        vector<Punto> ImportMesh(const string& FileName);
-        void ExportMesh(const Mesh& mesh);
+        public:
+            bool ImportMesh(Vector<Punto>& listaPunti,const string& FileName);
+            bool ExportMesh(const Mesh& mesh);
     };
+   
+
 
 }
 
