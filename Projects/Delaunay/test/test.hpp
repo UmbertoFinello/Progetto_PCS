@@ -24,17 +24,23 @@ TEST(ClassPunto, PuntoConstructor)
 
 TEST(ClassPunto, PuntoCopy)
 {
+    unsigned int id = 4;
+    double x = 0;
+    double y = 0;
     Punto p = Punto(id,x,y);
     Punto copy = Punto(p);
 
-    EXPECT_EQ(copy.Show(),p.show);
+    EXPECT_EQ(copy.Show(),p.Show());
 }
 
 TEST(ClassLato, LatoConstructor_x)
 {
-    unsigned int id = 4;
-    Punto p1 = Punto(0,0,0);
-    Punto p2 = Punto(1,1,0);
+    unsigned int id = 0;
+    double c1 = 0;
+    double c2 = 1;
+    Punto p1 = Punto(id,c1,c1);
+    id++;
+    Punto p2 = Punto(id,c2,c1);
     double length = 1;
 
     string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);
@@ -47,9 +53,12 @@ TEST(ClassLato, LatoConstructor_x)
 
 TEST(ClassLato, LatoConstructor_y)
 {
-    unsigned int id = 4;
-    Punto p1 = Punto(0,0,0);
-    Punto p2 = Punto(1,0,1);
+    unsigned int id = 0;
+    double c1 = 0;
+    double c2 = 1;
+    Punto p1 = Punto(id,c1,c1);
+    id++;
+    Punto p2 = Punto(id,c1,c2);
     double length = 1;
 
     string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);
@@ -62,9 +71,12 @@ TEST(ClassLato, LatoConstructor_y)
 
 TEST(ClassLato, LatoConstructor_pitagora)
 {
-    unsigned int id = 4;
-    Punto p1 = Punto(0,0,0);
-    Punto p2 = Punto(1,1,1);
+    unsigned int id = 0;
+    double c1 = 0;
+    double c2 = 1;
+    Punto p1 = Punto(id,c1,c1);
+    id++;
+    Punto p2 = Punto(id,c2,c2);
     double length = sqrt(2);
 
     string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);

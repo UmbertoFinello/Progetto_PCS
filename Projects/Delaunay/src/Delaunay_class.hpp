@@ -17,6 +17,7 @@ namespace ProjectLibrary
     friend class Lato;
     friend class Triangolo;
     friend class Mesh;
+    friend class IOMesh;
     protected:
         unsigned int _id;
         double _x;
@@ -30,9 +31,9 @@ namespace ProjectLibrary
 
     class Lato
     {
-    friend class Punto;
     friend class Triangolo;
     friend class Mesh;
+    friend class IOMesh;
     protected:
         unsigned int _id;
         Punto _p1;
@@ -45,7 +46,7 @@ namespace ProjectLibrary
 
     class Triangolo
     {
-
+    friend class IOMesh;
     friend class Mesh;
     protected:
         vector<Punto> _vertici;
@@ -61,7 +62,6 @@ namespace ProjectLibrary
 
     class Mesh
     {
-
     friend class IOMesh;
     protected:
         vector<Triangolo> _listaTriangoli;
@@ -69,7 +69,7 @@ namespace ProjectLibrary
         vector<Punto> _listaPunti;
         //MatrixXd<unsigned int> _adiacenza;
     public:
-        Mesh(const vector<Punto>& listaPunti , string OutFilePath);
+        Mesh(const vector<Punto>& listaPunti);
         array<unsigned int, 2> DentroMesh(const Punto p);
     };
 
@@ -77,8 +77,8 @@ namespace ProjectLibrary
     class IOMesh
     {
         public:
-            bool ImportMesh(Vector<Punto>& listaPunti,const string& FileName);
-            bool ExportMesh(const Mesh& mesh);
+            bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
+            bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
     };
    
 

@@ -93,13 +93,7 @@ namespace ProjectLibrary
             }
         }
 
-    }
-
-    
-
-    bool IOMesh::ImportMesh(Vector<Punto>& listaPunti,const string& FileName)
-
-    {
+    bool IOMesh::ImportPunti(vector<Punto>& listaPunti, const string& FileName){
         ifstream file;
         file.open(FileName);
         if(file.fail())
@@ -126,12 +120,11 @@ namespace ProjectLibrary
         return true;
     }
 
-    bool IOMesh::ExportMesh(const Mesh& mesh , string OutFilePath)
+    bool IOMesh::ExportMesh(const Mesh& mesh , const string& OutFilePath)
     {
         ofstream file;
-
-        file.open(OutFilePath + 'Lati_Mesh.csv');
-        if (file.fail)
+        file.open(OutFilePath + "Lati_Mesh.csv");
+        if (file.fail())
             return false;
 
         file << "id p1.id p2.id length\n";
@@ -145,8 +138,8 @@ namespace ProjectLibrary
 
 
         // dubbio, posso "sovrascrivere" sull'oggetto ofstream ?
-        file.open(OutFilePath + 'Triangoli_Mesh.csv');
-        if (file.fail)
+        file.open(OutFilePath + "Triangoli_Mesh.csv");
+        if (file.fail())
             return false;
 
         file << "id_triangolo p1.id p2.id p3.id l1.id l2.id l3.id \n" << endl;
@@ -240,6 +233,6 @@ namespace ProjectLibrary
     }
     
 
-};
+}
 
 
