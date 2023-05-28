@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <fstream>
+#include <Eigen/Dense>
 
 using namespace std;
 using namespace Eigen;
@@ -19,12 +20,13 @@ namespace ProjectLibrary
     friend class Mesh;
     friend class IOMesh;
     protected:
-        unsigned int _id;
+        int _id;
         double _x;
         double _y;
     public:
-        Punto(unsigned int& id , double& x, double& y);
+        Punto(unsigned int& id, double& x, double& y);
         Punto(const Punto& p);
+        Punto(){}
         string Show();
     };
 
@@ -41,6 +43,8 @@ namespace ProjectLibrary
         double _length;
     public:
         Lato(unsigned int& id , Punto& p1, Punto& p2);
+        Lato(const Lato& lat);
+        Lato(){}
         string Show();
     };
 
@@ -53,7 +57,12 @@ namespace ProjectLibrary
         int _id;
         vector<Lato> _lati;
     public:
-        Triangolo(Punto& p1, Punto& p2, Punto& p3, unsigned int& identificatore, vector<Lato>& l);
+        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, Lato& lat1, Lato& lat2, Lato& lat3);
+        //Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato);
+        //Triangolo(unsigned int& identificatore, Punto& p, Lato& lat, unsigned int& idlato);
+        //Triangolo(unsigned int& identificatore, Lato& lat1, Lato& lat2, unsigned int& idlato);
+        Triangolo(){}
+        Triangolo(const Triangolo& triang);
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
         string Show();
@@ -70,6 +79,7 @@ namespace ProjectLibrary
         //MatrixXd<unsigned int> _adiacenza;
     public:
         Mesh(const vector<Punto>& listaPunti);
+        Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto p);
     };
 
@@ -77,6 +87,7 @@ namespace ProjectLibrary
     class IOMesh
     {
         public:
+            IOMesh(){}
             bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
             bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
     };
