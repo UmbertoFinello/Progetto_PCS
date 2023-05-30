@@ -78,6 +78,7 @@ namespace ProjectLibrary
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* dentro_triang);
+        void ControlloDelaunay(Triangolo& triang);
     };
 
 

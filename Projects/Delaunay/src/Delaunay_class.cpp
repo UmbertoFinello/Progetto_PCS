@@ -45,7 +45,6 @@ namespace ProjectLibrary
                 idlato++;
             }
         }
-        identificatore++;
     }
 
     Triangolo::Triangolo(const Triangolo& triang):
@@ -89,11 +88,11 @@ namespace ProjectLibrary
         PuntiNonEstr.remove(listaPunti[1]);
         PuntiNonEstr.remove(listaPunti[i]);
 
-        Triangolo t1 = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], idlato);
-        _listaTriangoli.push_back(t1);
+        Triangolo tng = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], idlato);
+        idtriang++;
+        _listaTriangoli.push_back(tng);
 
-        Triangolo t2;
-        Triangolo t3;
+        Triangolo tr;
         Triangolo* pr = nullptr;
         array<unsigned int, 2> DM;
         for(Punto po : PuntiNonEstr){
@@ -101,32 +100,16 @@ namespace ProjectLibrary
             if (DM[0] == 1){
                 tr =  *pr;
                 _listaTriangoli.remove(*pr);
-                /*
-                idlato++;
-                l1 = Lato(idlato,(tr._lati)[0]._p1, po);
-                idlato++;
-                l2 = Lato(idlato, po, (tr._lati)[0]._p2);
-                _listaLati.push_back(l1);
-                _listaLati.push_back(l2);
-                */
 
-                t1 = Triangolo(DM[1], po, (tr._lati)[0], idlato);
+                tng = Triangolo(DM[1], po, (tr._vertici)[0], (tr._vertici)[1], idlato);
                 _listaTriangoli.push_back(t1);
+                this->ControlloDelaunay(_listaTriangoli.end());
 
-                l1=_listaLati.end();
-                t2 = Triangolo(idtriang, po, (tr._lati)[1], l1, idlato);
-                idtriang++;
-                _listaTriangoli.push_back(t2);
-
-                l2=_listaLati.end();
-                t3 = Triangolo(idtriang, po, (tr._lati)[1], l1, l2, idlato);
-                idtriang++;
-                _listaTriangoli.push_back(t3);
-
-                if(_listaTriangoli.size() > 3){
-                    this->ControlloDelaunay(t1);
-                    this->ControlloDelaunay(t2);
-                    this->ControlloDelaunay(t3);
+                for(unsigned int k = 1; k<3; k++){
+                    tng = Triangolo(idtriang, po, (tr._vertici)[k], (tr._vertici)[(k+1)%3], idlato);
+                    idtriang++;
+                    _listaTriangoli.push_back(tng);
+                    this->ControlloDelaunay(_listaTriangoli.end());
                 }
             }else{
                 this->CollegaSenzaIntersez(po);
