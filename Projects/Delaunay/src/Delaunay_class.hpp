@@ -54,12 +54,13 @@ namespace ProjectLibrary
     friend class Mesh;
     protected:
         vector<Punto> _vertici;
-        int _id;
+        unsigned int _id;
         vector<Lato> _lati;
     public:
-        bool CheckConnection(const Punto& a, const punto& b, Lato*& l);
-        Triangolo(){}
+        bool CheckConnection(const Punto& a, const Punto& b, Lato*& l);
+        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato);
         Triangolo(const Triangolo& triang);
+        Triangolo(){}
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
         string Show();

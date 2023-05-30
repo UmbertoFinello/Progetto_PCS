@@ -2,7 +2,7 @@
 
 namespace ProjectLibrary
 {
-    Punto::Punto(int& id , double& x, double& y):
+    Punto::Punto(unsigned int& id , double& x, double& y):
         _id(id) , _x(x) , _y(y)
     {}
 
@@ -40,7 +40,7 @@ namespace ProjectLibrary
                 _lati.push_back(*lat);
             } else {
                 l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
-                (Mesh._listaLati).push_back(l);
+                mesh._listaLati.push_back(l);
                 _lati.push_back(l);
                 idlato++;
             }
@@ -102,7 +102,7 @@ namespace ProjectLibrary
                 _listaTriangoli.remove(*pr);
 
                 tng = Triangolo(DM[1], po, (tr._vertici)[0], (tr._vertici)[1], idlato);
-                _listaTriangoli.push_back(t1);
+                _listaTriangoli.push_back(tng);
                 this->ControlloDelaunay(_listaTriangoli.end());
 
                 for(unsigned int k = 1; k<3; k++){
@@ -246,14 +246,14 @@ namespace ProjectLibrary
         return final;
     }
 
-    bool Triangolo::CheckConnection(const Punto& a, const punto& b, Lato*& l){
+    bool Triangolo::CheckConnection(const Punto& a, const Punto& b, Lato*& l){
         for (Lato lat : Mesh._listaLati){
             if((a._id != (lat._p1)._id && b._id == (lat._p2)._id)||(b._id != (lat._p1)._id && a._id == (lat._p2)._id)){
-           l = &lat;
-           return true;
+                l = &lat;
+                return true;
             }
         }
-        return false
+        return false;
 
     }
 

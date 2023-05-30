@@ -6,12 +6,12 @@ int main()
 {
     IOMesh IO = IOMesh();
     vector<Punto> List_punti;
-    if(!(IO.ImportPunti(List_punti,'./Dataset/Test1.csv')))
+    if(!(IO.ImportPunti(List_punti,"./Dataset/Test1.csv")))
         return -1;
     else{
-        Mesh Mesh = Mesh(List_punti);
+        Mesh mesh = Mesh(List_punti);
         //Mesh.Show();
-        if(!(IO.ExportMesh(Mesh, './Result/')))
+        if(!(IO.ExportMesh(Mesh, "./Result/")))
             return -2;
     }
     return 0;
