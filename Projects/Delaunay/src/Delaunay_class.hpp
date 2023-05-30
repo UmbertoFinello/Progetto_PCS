@@ -54,10 +54,11 @@ namespace ProjectLibrary
     friend class Mesh;
     protected:
         vector<Punto> _vertici;
-        int _id;
+        unsigned int _id;
         vector<Lato> _lati;
     public:
-        bool CheckConnection(const Punto& a, const punto& b, Lato*& l);
+        bool CheckConnection(const Punto& a, const Punto& b, Lato*& l);
+        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato);
         Triangolo(){}
         Triangolo(const Triangolo& triang);
         double CalcolaAngolo(const Lato& segm);
@@ -68,7 +69,8 @@ namespace ProjectLibrary
 
     class Mesh
     {
-    friend class IOMesh;
+        friend class IOMesh;
+        friend class Triangolo;
     protected:
         list<Triangolo> _listaTriangoli;
         list<Lato> _listaLati;
@@ -77,7 +79,7 @@ namespace ProjectLibrary
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
-        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* dentro_triang);
+        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo*& dentro_triang);
         void ControlloDelaunay(Triangolo& triang);
     };
 
@@ -89,8 +91,8 @@ namespace ProjectLibrary
             bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
             bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
     };
-   
 
+    double crossProduct(const Punto& p1, const Punto& p2);
 
 }
 
