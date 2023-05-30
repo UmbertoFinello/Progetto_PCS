@@ -91,7 +91,7 @@ namespace ProjectLibrary
             bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
     };
    
-
+    double crossProduct(const Punto& p1, const Punto& p2);
 
 }
 
