@@ -57,10 +57,7 @@ namespace ProjectLibrary
         int _id;
         vector<Lato> _lati;
     public:
-        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, Lato& lat1, Lato& lat2, Lato& lat3);
-        //Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato);
-        //Triangolo(unsigned int& identificatore, Punto& p, Lato& lat, unsigned int& idlato);
-        //Triangolo(unsigned int& identificatore, Lato& lat1, Lato& lat2, unsigned int& idlato);
+        bool CheckConnection(const Punto& a, const punto& b, Lato*& l);
         Triangolo(){}
         Triangolo(const Triangolo& triang);
         double CalcolaAngolo(const Lato& segm);
@@ -73,14 +70,14 @@ namespace ProjectLibrary
     {
     friend class IOMesh;
     protected:
-        vector<Triangolo> _listaTriangoli;
-        vector<Lato> _listaLati;
-        vector<Punto> _listaPunti;
+        list<Triangolo> _listaTriangoli;
+        list<Lato> _listaLati;
+        list<Punto> _listaPunti;
         //MatrixXd<unsigned int> _adiacenza;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
-        array<unsigned int, 2> DentroMesh(const Punto p);
+        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* dentro_triang);
     };
 
 

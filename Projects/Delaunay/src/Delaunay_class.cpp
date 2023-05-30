@@ -28,83 +28,25 @@ namespace ProjectLibrary
         return to_string(_id) + " " + _p1.Show() + " " + _p2.Show() + " " + to_string(_length);
     }
 
-
-    Triangolo::Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, Lato& lat1, Lato& lat2, Lato& lat3):
-        _id(identificatore)
-    {
-        _lati = {lat1, lat2, lat3};
-        _vertici = {p1,p2,p3};
-        this->OrdinamentoAntiorario();
-    }
-
-/*
     Triangolo::Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato):
         _id(identificatore)
     {
         _vertici = {p1,p2,p3};
         this->OrdinamentoAntiorario();
+        Lato* lat = nullptr;
+        Lato l;
         for(unsigned int i = 0; i<3; i++){
-            Lato l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
-            (Mesh._listaLati).push_back(l);
-            _lati.push_back(l);
-            idlato++;
-        }
-    }
-
-    Triangolo::Triangolo(unsigned int& identificatore, Punto& p, Lato& lat, unsigned int& idlato):
-        _id(identificatore)
-    {
-        _vertici = {p,lat._p1,lat._p2};
-        this->OrdinamentoAntiorario();
-        for(unsigned int i = 0; i<3; i++){
-            if((_vertici[i]._id != (lat._p1)._id && _vertici[(i+1)%3]._id == (lat._p2)._id)||
-                (_vertici[(i+1)%3]._id != (lat._p1)._id && _vertici[i]._id == (lat._p2)._id))
-            {
-                (Mesh._listaLati).push_back(lat);
-                _lati.push_back(lat);
-                idlato++;
-            }else{
-                Lato l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
-                (Mesh._listaLati).push_back(l);
-                _lati.push_back(l);
-                idlato++;
-            }
-        }
-    }
-
-    Triangolo::Triangolo(unsigned int& identificatore, Lato& lat1, Lato& lat2, unsigned int& idlato):
-        _id(identificatore)
-    {
-        if(lat2._p1 != lat1._p1 && lat2._p1 != lat1._p2){
-            Punto p = lat2._p1;
-        }else{
-            Punto p = lat2._p2;
-        }
-        _vertici = {p,lat1._p1,lat1._p2};
-        this->OrdinamentoAntiorario();
-        for(unsigned int i = 0; i<3; i++){
-            if((_vertici[i]._id == (lat1._p1)._id && _vertici[(i+1)%3]._id == (lat1._p2)._id)||
-                (_vertici[(i+1)%3]._id == (lat1._p1)._id && _vertici[i]._id == (lat1._p2)._id))
-            {
-                (Mesh._listaLati).push_back(lat1);
-                _lati.push_back(lat1);
-                idlato++;
-            } else if((_vertici[i]._id == (lat2._p1)._id && _vertici[(i+1)%3]._id == (lat2._p2)._id)||
-                       (_vertici[(i+1)%3]._id == (lat2._p1)._id && _vertici[i]._id == (lat2._p2)._id))
-            {
-                (Mesh._listaLati).push_back(lat2);
-                _lati.push_back(lat2);
-                idlato++;
+            if(this->CheckConnection(_vertici[i],_vertici[(i+1)%3], lat)){
+                _lati.push_back(*lat);
             } else {
-                Lato l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
+                l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
                 (Mesh._listaLati).push_back(l);
                 _lati.push_back(l);
                 idlato++;
-
             }
         }
+        identificatore++;
     }
-*/
 
     Triangolo::Triangolo(const Triangolo& triang):
         _id(triang._id) , _lati(triang._lati) , _vertici(triang._vertici)
@@ -147,41 +89,47 @@ namespace ProjectLibrary
         PuntiNonEstr.remove(listaPunti[1]);
         PuntiNonEstr.remove(listaPunti[i]);
 
-        Lato l1 = Lato(idlato,_listaPunti[0],_listaPunti[1]);
-        idlato++;
-        _listaLati.push_back(l1);
-        Lato l2 = Lato(idlato,_listaPunti[1],_listaPunti[i]);
-        _listaLati.push_back(l2);
-        idlato++;
-        Lato l3 = Lato(idlato,_listaPunti[i],_listaPunti[0]);
-        _listaLati.push_back(l3);
-
-        Triangolo t1 = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], l1, l2, l3);
-        idtriang++;
+        Triangolo t1 = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], idlato);
         _listaTriangoli.push_back(t1);
 
-        Triangolo tr;
+        Triangolo t2;
+        Triangolo t3;
+        Triangolo* pr = nullptr;
         array<unsigned int, 2> DM;
         for(Punto po : PuntiNonEstr){
-            DM = this->DentroMesh(po);
+            DM = this->DentroMesh(po, pr);
             if (DM[0] == 1){
-                tr =  _listaTriangoli[DM[1]];
+                tr =  *pr;
+                _listaTriangoli.remove(*pr);
+                /*
                 idlato++;
                 l1 = Lato(idlato,(tr._lati)[0]._p1, po);
                 idlato++;
                 l2 = Lato(idlato, po, (tr._lati)[0]._p2);
                 _listaLati.push_back(l1);
                 _listaLati.push_back(l2);
-                t1 = Triangolo(DM[1],"?","?", po, (tr._lati)[0],l1,l2);
-                _listaTriangoli[DM[1]] = t1;
-                _listaTriangoli.push_back(t1);
-                if(_listaTriangoli.size() >= 3)
-                    this->ControlloDelaunay(t1);
-            }else{
-                this->CalcolaPuntiVicini(po);
-                t1 = Triangolo();
-                this ->ControlloDelaunay(t1);
+                */
 
+                t1 = Triangolo(DM[1], po, (tr._lati)[0], idlato);
+                _listaTriangoli.push_back(t1);
+
+                l1=_listaLati.end();
+                t2 = Triangolo(idtriang, po, (tr._lati)[1], l1, idlato);
+                idtriang++;
+                _listaTriangoli.push_back(t2);
+
+                l2=_listaLati.end();
+                t3 = Triangolo(idtriang, po, (tr._lati)[1], l1, l2, idlato);
+                idtriang++;
+                _listaTriangoli.push_back(t3);
+
+                if(_listaTriangoli.size() > 3){
+                    this->ControlloDelaunay(t1);
+                    this->ControlloDelaunay(t2);
+                    this->ControlloDelaunay(t3);
+                }
+            }else{
+                this->CollegaSenzaIntersez(po);
             }
             PuntiNonEstr.pop_front();
         }
@@ -314,7 +262,17 @@ namespace ProjectLibrary
 
         return final;
     }
-    
+
+    bool Triangolo::CheckConnection(const Punto& a, const punto& b, Lato*& l){
+        for (Lato lat : Mesh._listaLati){
+            if((a._id != (lat._p1)._id && b._id == (lat._p2)._id)||(b._id != (lat._p1)._id && a._id == (lat._p2)._id)){
+           l = &lat;
+           return true;
+            }
+        }
+        return false
+
+    }
 
 }
 
