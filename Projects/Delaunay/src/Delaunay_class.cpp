@@ -53,16 +53,22 @@ namespace ProjectLibrary
     
     array<unsigned int, 2> Mesh::DentroMesh(const Punto p)
     {
+        unsigned int ident = 0;
         array<unsigned int, 2> result = {0,0};
-        for (unsigned int i = 0; i < ( _listaTriangoli.size() -1 ) ; i++)
+        for (Triangolo tr :  _listaTriangoli)
         {
-
+            Punto v1 = Punto(ident, tr._vertici[2]._x - tr._vertici[0]._x, tr._vertici[2]._y - tr._vertici[0]._y);
+            Punto v2 = Punto(ident, tr._vertici[1]._x - tr._vertici[0]._x, tr._vertici[1]._y - tr._vertici[0]._y);
+            Punto v3 = Punto(ident, p._x - tr._vertici[0]._x, p._y - tr._vertici[0]._y);
+            double dot1 = crossProduct(v1, v3);
+            double dot2 = crossProduct(v1, v2);
+            if (dot1 >= 0 && dot2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
+                result  = {1, tr._id};
+                triang = &tr;
+                return result;
+            }
         }
-
-
-
         return result;
-
     }
 
     Mesh::Mesh(const vector<Punto>& listaPunti)
@@ -254,8 +260,12 @@ namespace ProjectLibrary
             }
         }
         return false;
-
     }
+    
+    double crossProduct(Punto p1, Punto p2) {
+        return (p1._x * p2._y - p1._y * p2._x);
+    }
+
 
 }
 
