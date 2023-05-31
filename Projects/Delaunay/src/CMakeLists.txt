@@ -2,6 +2,8 @@ list(APPEND delaunay_headers ${CMAKE_CURRENT_SOURCE_DIR}/Delaunay_class.hpp)
 
 list(APPEND delaunay_sources ${CMAKE_CURRENT_SOURCE_DIR}/Delaunay_class.cpp)
 
+list(APPEND delaunay_headers ${CMAKE_CURRENT_SOURCE_DIR}/Sorting.hpp)
+
 list(APPEND delaunay_includes ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(delaunay_sources ${delaunay_sources} PARENT_SCOPE)

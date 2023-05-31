@@ -1,4 +1,7 @@
 #include "Delaunay_class.hpp"
+#include "Sorting.hpp"
+
+using namespace SortLibrary;
 
 namespace ProjectLibrary
 {
@@ -69,30 +72,80 @@ namespace ProjectLibrary
     {
         unsigned int idlato = 0;
         unsigned int idtriang = 0;
-        list<Punto> PuntiNonEstr;
-        for(unsigned int j = 0; j<listaPunti.size(); j++)
-            PuntiNonEstr.push_back(listaPunti[j]);
-        double Area = 0;
-        unsigned int i = 1;
-        while (Area == 0){
-            i++;
-            double Area = (listaPunti[0]._x*listaPunti[1]._y) + (listaPunti[0]._y*listaPunti[i]._x) +
-                          (listaPunti[1]._x*listaPunti[i]._y) - (listaPunti[i]._x*listaPunti[1]._y) -
-                          (listaPunti[i]._y*listaPunti[0]._x) - (listaPunti[1]._x*listaPunti[0]._y);
+        list<Punto> PuntiNonEstr;        
 
-        }        
-        _listaPunti.push_back(listaPunti[0]);
-        _listaPunti.push_back(listaPunti[1]);
-        _listaPunti.push_back(listaPunti[i]);
         PuntiNonEstr.remove(listaPunti[0]);
         PuntiNonEstr.remove(listaPunti[1]);
         PuntiNonEstr.remove(listaPunti[i]);
 
-        Triangolo tng = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], idlato);
-        idtriang++;
-        _listaTriangoli.push_back(tng);
+        unsigned int n = listaPunti.size() - 1;
+        bool ax = true;
+        vector<Punto> vx = MergeSort(listaPunti, 0, n, ax);
+        ax = false;
+        vector<Punto> vy = MergeSort(listaPunti, 0, n, ax);
 
-        Triangolo tr;
+        array<Punto, 4> v = {vx[0], vx[n], vy[0], vy[n]};
+        array<Punto, 3> punti_scelti;
+
+        if((v[0] == v[3]) && (v[2] != v[1]))
+        {
+            punti_scelti[0]=v[0];
+            punti_scelti[1]=v[1];
+            punti_scelti[2]=v[2];
+        }
+
+        else if ((v[0] != v[3]) && (v[2] == v[1]))
+        {
+            punti_scelti[0]=v[0];
+            punti_scelti[1]=v[1];
+            punti_scelti[2]=v[3];
+        }
+
+        else
+        {
+            if ((v[0] == v[3]) && (v[2] == v[1])){
+                v[0]= vx[1];
+                v[2]= vy[1];
+            }
+
+            double AreaMax = 0;
+            double Area = 0;
+
+            array<unsigned int,3> indici_scelti = {0,0,0};
+
+            for (unsigned int i = 0; i< 4;i++)
+            {
+                Area = 0.5*abs ( (v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
+                                 (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x)   );
+
+                if (AreaMax < Area) //TOLLERANZA
+                {
+                    AreaMax = Area;
+                    for (unsigned int j = 0; j<3;j++)
+                    {
+                        indici_scelti[j] = (i+j)%4;
+                    }
+
+                }
+
+            }
+            punti_scelti[0]=v[indici_scelti[0]];
+            punti_scelti[1]=v[indici_scelti[1]];
+            punti_scelti[2]=v[indici_scelti[2]];
+        }
+
+        _listaPunti.push_back(punti_scelti[0]);
+        _listaPunti.push_back(punti_scelti[1]);
+        _listaPunti.push_back(punti_scelti[2]);
+        Triangolo tr = Triangolo(idtriang++, punti_scelti[0], punti_scelti[1], punti_scelti[2], idlato);
+        _listaTriangoli.push_back(tr);
+
+        for(unsigned int j = 0; j<listaPunti.size(); j++){
+            if(listaPunti[j] != punti_scelti[0] || listaPunti[j] != punti_scelti[1] ||
+                listaPunti[j] != punti_scelti[2])
+            PuntiNonEstr.push_back(listaPunti[j]);
+        }
+
         Triangolo* pr = nullptr;
         array<unsigned int, 2> DM;
         for(Punto po : PuntiNonEstr){
@@ -106,8 +159,7 @@ namespace ProjectLibrary
                 this->ControlloDelaunay(_listaTriangoli.end());
 
                 for(unsigned int k = 1; k<3; k++){
-                    tng = Triangolo(idtriang, po, (tr._vertici)[k], (tr._vertici)[(k+1)%3], idlato);
-                    idtriang++;
+                    tng = Triangolo(idtriang++, po, (tr._vertici)[k], (tr._vertici)[(k+1)%3], idlato);
                     _listaTriangoli.push_back(tng);
                     this->ControlloDelaunay(_listaTriangoli.end());
                 }
@@ -117,6 +169,25 @@ namespace ProjectLibrary
             PuntiNonEstr.pop_front();
         }
     }
+
+    void Mesh::ControlloDelaunay(list<Triangolo>& listaTriangoli, queue<Triangolo>& q_t):
+    {
+        map <unsigned int, bool> Triangoli_visti;
+        unsigned int n= listaTriangoli.size() - 1;
+        Triangolo t1,t2;
+
+        for ( Triangolo t : listaTriangoli)
+            Triangoli_visti.insert(t.id, false);
+
+        while(!q_t.empty())
+        {
+            t1 = q_t.front();
+
+
+        }
+
+    }
+
 
 
     bool IOMesh::ImportPunti(vector<Punto>& listaPunti, const string& FileName){
@@ -167,7 +238,7 @@ namespace ProjectLibrary
         if (file.fail())
             return false;
 
-        file << "id_triangolo p1.id p2.id p3.id l1.id l2.id l3.id \n" << endl;
+        file << "id_triangolo p1 p2 p3 l1 l2 l3 \n" << endl;
 
         for(unsigned int i = 0; i < ((mesh._listaLati).size()-1) ; i++){
             file << mesh._listaTriangoli[i]._id << " ";
@@ -248,7 +319,7 @@ namespace ProjectLibrary
 
     bool Triangolo::CheckConnection(const Punto& a, const Punto& b, Lato*& l){
         for (Lato lat : Mesh._listaLati){
-            if((a._id != (lat._p1)._id && b._id == (lat._p2)._id)||(b._id != (lat._p1)._id && a._id == (lat._p2)._id)){
+            if((a != lat._p1 && b == lat._p2)||(b != lat._p1 && a == lat._p2)){
                 l = &lat;
                 return true;
             }
