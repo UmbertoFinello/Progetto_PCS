@@ -53,12 +53,13 @@ namespace ProjectLibrary
     friend class IOMesh;
     friend class Mesh;
     protected:
-        vector<Punto> _vertici;
+        array<Punto, 3> _vertici;
         unsigned int _id;
-        vector<Lato> _lati;
+        array<Lato, 3> _lati;
     public:
         bool CheckConnection(const Punto& a, const Punto& b, Lato*& l);
-        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato);
+        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato,
+                  list<Lato>& latAdd);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
         double CalcolaAngolo(const Lato& segm);

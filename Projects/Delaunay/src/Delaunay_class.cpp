@@ -28,20 +28,22 @@ namespace ProjectLibrary
         return to_string(_id) + " " + _p1.Show() + " " + _p2.Show() + " " + to_string(_length);
     }
 
-    Triangolo::Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato):
+    Triangolo::Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato,
+                         list<Lato>& latAdd):
         _id(identificatore)
     {
         _vertici = {p1,p2,p3};
+        latAdd = {};
         this->OrdinamentoAntiorario();
         Lato* lat = nullptr;
         Lato l;
         for(unsigned int i = 0; i<3; i++){
             if(this->CheckConnection(_vertici[i],_vertici[(i+1)%3], lat)){
-                _lati.push_back(*lat);
+                _lati[i]= (*lat);
             } else {
                 l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
-                mesh._listaLati.push_back(l);
-                _lati.push_back(l);
+                latAdd.push_back(l);
+                _lati[i] = l;
                 idlato++;
             }
         }
@@ -51,7 +53,7 @@ namespace ProjectLibrary
         _id(triang._id) , _lati(triang._lati) , _vertici(triang._vertici)
     {}
     
-    array<unsigned int, 2> Mesh::DentroMesh(const Punto p)
+    array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
     {
         unsigned int ident = 0;
         array<unsigned int, 2> result = {0,0};
@@ -75,6 +77,7 @@ namespace ProjectLibrary
     {
         unsigned int idlato = 0;
         unsigned int idtriang = 0;
+        list<Lato> listLatAdd;
         list<Punto> PuntiNonEstr;
         for(unsigned int j = 0; j<listaPunti.size(); j++)
             PuntiNonEstr.push_back(listaPunti[j]);
@@ -94,9 +97,11 @@ namespace ProjectLibrary
         PuntiNonEstr.remove(listaPunti[1]);
         PuntiNonEstr.remove(listaPunti[i]);
 
-        Triangolo tng = Triangolo(idtriang,_listaPunti[0], _listaPunti[1], _listaPunti[i], idlato);
+        Triangolo tng = Triangolo(idtriang,listaPunti[0], listaPunti[1], listaPunti[i], idlato, listLatAdd);
         idtriang++;
         _listaTriangoli.push_back(tng);
+        for(Lato lt : listLatAdd)
+            _listaLati.push_back(lt);
 
         Triangolo tr;
         Triangolo* pr = nullptr;
