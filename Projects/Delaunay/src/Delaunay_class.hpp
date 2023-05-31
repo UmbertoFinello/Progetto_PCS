@@ -19,6 +19,7 @@ namespace ProjectLibrary
     friend class Triangolo;
     friend class Mesh;
     friend class IOMesh;
+    friend double crossProduct(Punto& p1, Punto& p2);
     protected:
         int _id;
         double _x;
@@ -41,8 +42,9 @@ namespace ProjectLibrary
         Punto _p1;
         Punto _p2;
         double _length;
+        array<unsigned int,2> _listIdTr;
     public:
-        Lato(unsigned int& id , Punto& p1, Punto& p2);
+        Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
         Lato(){}
         string Show();
@@ -53,13 +55,13 @@ namespace ProjectLibrary
     friend class IOMesh;
     friend class Mesh;
     protected:
-        array<Punto, 3> _vertici;
         unsigned int _id;
+        array<Punto, 3> _vertici;
         array<Lato, 3> _lati;
     public:
-        bool CheckConnection(const Punto& a, const Punto& b, Lato*& l);
-        Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato,
-                  list<Lato>& latAdd);
+        array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
+        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
+                  vector<Lato>*& vlat);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
         double CalcolaAngolo(const Lato& segm);
@@ -72,14 +74,14 @@ namespace ProjectLibrary
     {
     friend class IOMesh;
     protected:
-        list<Triangolo> _listaTriangoli;
-        list<Lato> _listaLati;
-        list<Punto> _listaPunti;
+        vector<Triangolo> _listaTriangoli;
+        vector<Lato> _listaLati;
+        vector<Punto> _listaPunti;
         //MatrixXd<unsigned int> _adiacenza;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
-        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* dentro_triang);
+        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
         void ControlloDelaunay(Triangolo& triang);
     };
 

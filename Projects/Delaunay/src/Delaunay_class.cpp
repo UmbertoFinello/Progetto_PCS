@@ -14,54 +14,64 @@ namespace ProjectLibrary
         return to_string(_id) + " " + to_string(_x) + " " + to_string(_y);
     }
 
-    Lato::Lato(unsigned int& id , Punto& p1, Punto& p2):
+    Lato::Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr):
         _id(id), _p1(p1), _p2(p2)
     {
+        _listIdTr[0] = idtr;
         _length = sqrt(pow((p1._x - p2._x),2) + pow((p1._y - p2._y),2));
     }
 
     Lato::Lato(const Lato& lat):
-        _id(lat._id) , _p1(lat._p1) , _p2(lat._p2)
+        _id(lat._id) , _p1(lat._p1) , _p2(lat._p2), _length(lat._length), _listIdTr(lat._listIdTr)
     {}
     
     string Lato::Show(){
         return to_string(_id) + " " + _p1.Show() + " " + _p2.Show() + " " + to_string(_length);
     }
 
-    Triangolo::Triangolo(unsigned int& identificatore, Punto& p1, Punto& p2, Punto& p3, unsigned int& idlato,
-                         list<Lato>& latAdd):
+    Triangolo::Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
+                         vector<Lato>*& vlat):
         _id(identificatore)
     {
         _vertici = {p1,p2,p3};
-        latAdd = {};
         this->OrdinamentoAntiorario();
         Lato* lat = nullptr;
         Lato l;
+        array<unsigned int, 2> CC = {0,0};
         for(unsigned int i = 0; i<3; i++){
-            if(this->CheckConnection(_vertici[i],_vertici[(i+1)%3], lat)){
-                _lati[i]= (*lat);
+            CC = this->CheckConnection(_vertici[i],_vertici[(i+1)%3],  vlat);
+            if(CC[0]== 1){
+                _lati[i] = (*vlat)[CC[1]];
+                ((*vlat)[CC[1]])._listIdTr[1] = identificatore;
             } else {
-                l = Lato(idlato,_vertici[i],_vertici[(i+1)%3]);
-                latAdd.push_back(l);
+                l = Lato(idlato,_vertici[i],_vertici[(i+1)%3], identificatore);
+                (*vlat).push_back(l);
                 _lati[i] = l;
                 idlato++;
             }
         }
+
     }
 
     Triangolo::Triangolo(const Triangolo& triang):
-        _id(triang._id) , _lati(triang._lati) , _vertici(triang._vertici)
+        _id(triang._id), _vertici(triang._vertici), _lati(triang._lati)
     {}
     
-    array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
+    array<unsigned int, 2> Mesh::DentroMesh(const Punto& p, Triangolo* triang)
     {
         unsigned int ident = 0;
         array<unsigned int, 2> result = {0,0};
         for (Triangolo tr :  _listaTriangoli)
         {
-            Punto v1 = Punto(ident, tr._vertici[2]._x - tr._vertici[0]._x, tr._vertici[2]._y - tr._vertici[0]._y);
-            Punto v2 = Punto(ident, tr._vertici[1]._x - tr._vertici[0]._x, tr._vertici[1]._y - tr._vertici[0]._y);
-            Punto v3 = Punto(ident, p._x - tr._vertici[0]._x, p._y - tr._vertici[0]._y);
+            double expr1 = tr._vertici[2]._x - tr._vertici[0]._x;
+            double expr2 = tr._vertici[2]._y - tr._vertici[0]._y;
+            Punto v1 = Punto(ident, expr1, expr2);
+            expr1 = tr._vertici[1]._x - tr._vertici[0]._x;
+            expr2 = tr._vertici[1]._y - tr._vertici[0]._y;
+            Punto v2 = Punto(ident, expr1, expr2);
+            expr1 = p._x - tr._vertici[0]._x;
+            expr2 = p._y - tr._vertici[0]._y;
+            Punto v3 = Punto(ident, expr1, expr2);
             double dot1 = crossProduct(v1, v3);
             double dot2 = crossProduct(v1, v2);
             if (dot1 >= 0 && dot2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
@@ -77,7 +87,7 @@ namespace ProjectLibrary
     {
         unsigned int idlato = 0;
         unsigned int idtriang = 0;
-        list<Lato> listLatAdd;
+        vector<Lato>* listLat;
         list<Punto> PuntiNonEstr;
         for(unsigned int j = 0; j<listaPunti.size(); j++)
             PuntiNonEstr.push_back(listaPunti[j]);
@@ -97,11 +107,12 @@ namespace ProjectLibrary
         PuntiNonEstr.remove(listaPunti[1]);
         PuntiNonEstr.remove(listaPunti[i]);
 
-        Triangolo tng = Triangolo(idtriang,listaPunti[0], listaPunti[1], listaPunti[i], idlato, listLatAdd);
+        listLat = &_listaLati;
+
+        Triangolo tng = Triangolo(idtriang, listaPunti[0], listaPunti[1], listaPunti[i], idlato, listLat);
         idtriang++;
         _listaTriangoli.push_back(tng);
-        for(Lato lt : listLatAdd)
-            _listaLati.push_back(lt);
+
 
         Triangolo tr;
         Triangolo* pr = nullptr;
@@ -257,17 +268,17 @@ namespace ProjectLibrary
         return final;
     }
 
-    bool Triangolo::CheckConnection(const Punto& a, const Punto& b, Lato*& l){
-        for (Lato lat : Mesh._listaLati){
-            if((a._id != (lat._p1)._id && b._id == (lat._p2)._id)||(b._id != (lat._p1)._id && a._id == (lat._p2)._id)){
-                l = &lat;
-                return true;
+    array<unsigned int, 2> Triangolo::CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat){
+        for (unsigned int k = 0; k<veclat->size(); k++){
+            if((a._id != ((*veclat)[k]._p1)._id && b._id == ((*veclat)[k]._p2)._id)||
+               (b._id != ((*veclat)[k]._p1)._id && a._id == ((*veclat)[k]._p2)._id)){
+                return {1,(*veclat)[k]._id};
             }
         }
-        return false;
+        return {0,0};
     }
     
-    double crossProduct(Punto p1, Punto p2) {
+    double crossProduct(Punto& p1, Punto& p2) {
         return (p1._x * p2._y - p1._y * p2._x);
     }
 
