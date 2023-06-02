@@ -8,6 +8,7 @@
 #include <fstream>
 #include <Eigen/Dense>
 
+
 #include <queue>
 #include <map>
 
@@ -16,20 +17,18 @@ using namespace Eigen;
 
 namespace ProjectLibrary
 {
+    constexpr double max_tolerance(const double& x, const double& y)
+    {
+      return x > y ? x : y;
+    }
 
     class Punto
     {
-    friend class Lato;
-    friend class Triangolo;
-    friend class Mesh;
-    friend class IOMesh;
-    friend double crossProduct(Punto& p1, Punto& p2);
-    protected:
-        int _id;
+    public:
+        unsigned int _id;
         double _x;
         double _y;
-    public:
-        // la tolleranza voglio poterla cambiare abbastanza liberamente
+
         static constexpr double geometricTol = 1.0e-12;
         static constexpr double geometricTol_Squared = max_tolerance(Punto::geometricTol * Punto::geometricTol,
                                                                      numeric_limits<double>::epsilon());
@@ -56,7 +55,6 @@ namespace ProjectLibrary
       return !(p1 == p2);
     }
 
-
     class Lato
     {
     friend class Triangolo;
@@ -67,7 +65,7 @@ namespace ProjectLibrary
         Punto _p1;
         Punto _p2;
         double _length;
-        array<unsigned int,2> _listIdTr;
+        vector<unsigned int> _listIdTr;
     public:
         Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
@@ -83,15 +81,14 @@ namespace ProjectLibrary
         unsigned int _id;
         array<Punto, 3> _vertici;
         array<Lato, 3> _lati;
-    public:
-        array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
+    public:        
         Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
                   vector<Lato>*& vlat);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
+        array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
-
         string Show();
     };
 
@@ -106,9 +103,10 @@ namespace ProjectLibrary
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
-        void ControlloDelaunay(Triangolo& triang);
-    };
+        void ControlloDelaunay(list<unsigned int>& coda);
+        void CollegaSenzaIntersezioni(Punto& newp);
 
+    };
 
     class IOMesh
     {
@@ -119,7 +117,6 @@ namespace ProjectLibrary
     };
    
     double crossProduct(const Punto& p1, const Punto& p2);
-
 }
 
 #endif // __DELAUNAY_H

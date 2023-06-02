@@ -3,8 +3,7 @@
 
 #include <gtest/gtest.h>
 
-//#include "Delaunay_class.hpp"
-#include "Delaunay_class.cpp"
+#include "Delaunay_class.hpp"
 
 using namespace testing;
 using namespace ProjectLibrary;
@@ -43,9 +42,10 @@ TEST(ClassLato, LatoConstructor_x)
     Punto p2 = Punto(id,c2,c1);
     double length = 1;
 
-    string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);
+    string right = to_string(id) + " " + to_string(p1._id) + " " + to_string(p2._id) + " " +
+            to_string(length) + " " + to_string(id);
 
-    Lato l = Lato(id,p1,p2);
+    Lato l = Lato(id, p1, p2, id);
 
     EXPECT_EQ(l.Show(),right);
 
@@ -61,9 +61,10 @@ TEST(ClassLato, LatoConstructor_y)
     Punto p2 = Punto(id,c1,c2);
     double length = 1;
 
-    string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);
+    string right = to_string(id) + " " + to_string(p1._id) + " " + to_string(p2._id) + " " +
+            to_string(length) + " " + to_string(id);
 
-    Lato l = Lato(id,p1,p2);
+    Lato l = Lato(id, p1, p2, id);
 
     EXPECT_EQ(l.Show(),right);
 
@@ -79,9 +80,10 @@ TEST(ClassLato, LatoConstructor_pitagora)
     Punto p2 = Punto(id,c2,c2);
     double length = sqrt(2);
 
-    string right = to_string(id) + " " + p1.Show() + " " + p2.Show() + " " + to_string(length);
+    string right = to_string(id) + " " + to_string(p1._id) + " " + to_string(p2._id) + " " +
+            to_string(length) + " " + to_string(id);
 
-    Lato l = Lato(id,p1,p2);
+    Lato l = Lato(id, p1, p2, id);
 
     EXPECT_EQ(l.Show(),right);
 

@@ -1,16 +1,18 @@
 #include "Delaunay_class.hpp"
-#include "Sorting.hpp"
-
-using namespace SortLibrary;
+#include "sorting.hpp"
 
 namespace ProjectLibrary
 {
+    double crossProduct(Punto& p1, Punto& p2){
+        return (p1._x * p2._y - p1._y * p2._x);
+    }
+
     Punto::Punto(unsigned int& id , double& x, double& y):
         _id(id) , _x(x) , _y(y)
     {}
 
     Punto::Punto(const Punto& p):
-        _id(p._id) , _x(p._x) , _y(p._y)
+        _id(p._id), _x(p._x), _y(p._y)
     {}
 
     string Punto::Show(){
@@ -20,7 +22,7 @@ namespace ProjectLibrary
     Lato::Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr):
         _id(id), _p1(p1), _p2(p2)
     {
-        _listIdTr[0] = idtr;
+        _listIdTr.push_back(idtr);
         _length = sqrt(pow((p1._x - p2._x),2) + pow((p1._y - p2._y),2));
     }
 
@@ -29,7 +31,63 @@ namespace ProjectLibrary
     {}
     
     string Lato::Show(){
-        return to_string(_id) + " " + _p1.Show() + " " + _p2.Show() + " " + to_string(_length);
+        string a;
+        if(_listIdTr.size() == 1)
+            a = to_string(_listIdTr[0]);
+        else
+            a = to_string(_listIdTr[0]) + "," + to_string(_listIdTr[1]);
+
+        return to_string(_id) + " " + to_string(_p1._id) + " " + to_string(_p2._id) + " " + to_string(_length) + " " + a;
+    }
+
+    void Triangolo::OrdinamentoAntiorario()
+    {
+        double Area = (0.5)*( (_vertici[0]._x*_vertici[1]._y) +
+                      (_vertici[0]._y*_vertici[2]._x) + (_vertici[1]._x*_vertici[2]._y)
+                    - (_vertici[2]._x*_vertici[1]._y) - (_vertici[2]._y*_vertici[0]._x)
+                    - (_vertici[1]._x*_vertici[0]._y) );
+
+        if (Area < 0)       //TOLLERANZA
+        {
+            Punto a = _vertici[1];
+            _vertici[1] = _vertici[2];
+            _vertici[2] = a;
+        }
+
+    }
+
+    double Triangolo::CalcolaAngolo(const Lato& segm)
+    {
+    unsigned int l1 = 3;
+    unsigned int l2 = 3;
+    for (unsigned int i = 0; i < 3; i++)
+    {
+        if ( _lati[i]._id != segm._id)
+        {
+           if(  l1 == 3)
+           {
+               l1 = i;
+           }
+           else if ( l2 == 3)
+           {
+               l2 = i;
+           }
+        }
+    }
+        double cosenoAngolo = (pow(_lati[l1]._length,2) + pow(_lati[l2]._length,2) - (segm._length * segm._length)) / (2 * _lati[l1]._length * _lati[l2]._length);
+        double angoloRad = acos(cosenoAngolo);
+        // double angoloDeg = angoloRad * 180.0 / M_PI;
+        return angoloRad;
+    }
+
+    array<unsigned int, 2> Triangolo::CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat){
+        for (unsigned int k = 0; k<veclat->size(); k++){
+            if((a != (*veclat)[k]._p1 && b == (*veclat)[k]._p2)||
+                (b != (*veclat)[k]._p1 && a == (*veclat)[k]._p2)){
+                return {1,(*veclat)[k]._id};
+            }
+        }
+        return {0,0};
     }
 
     Triangolo::Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
@@ -38,14 +96,13 @@ namespace ProjectLibrary
     {
         _vertici = {p1,p2,p3};
         this->OrdinamentoAntiorario();
-        Lato* lat = nullptr;
         Lato l;
         array<unsigned int, 2> CC = {0,0};
         for(unsigned int i = 0; i<3; i++){
             CC = this->CheckConnection(_vertici[i],_vertici[(i+1)%3],  vlat);
             if(CC[0]== 1){
                 _lati[i] = (*vlat)[CC[1]];
-                ((*vlat)[CC[1]])._listIdTr[1] = identificatore;
+                (((*vlat)[CC[1]])._listIdTr).push_back(identificatore);
             } else {
                 l = Lato(idlato,_vertici[i],_vertici[(i+1)%3], identificatore);
                 (*vlat).push_back(l);
@@ -59,6 +116,11 @@ namespace ProjectLibrary
     Triangolo::Triangolo(const Triangolo& triang):
         _id(triang._id), _vertici(triang._vertici), _lati(triang._lati)
     {}
+
+    string Triangolo::Show(){
+        return to_string(_id) + " " + to_string(_vertici[0]._id) + "," + to_string(_vertici[1]._id) + "," + to_string(_vertici[2]._id)
+                + " " + to_string(_lati[0]._id) + "," + to_string(_lati[1]._id) + "," + to_string(_lati[2]._id);
+    }
     
     array<unsigned int, 2> Mesh::DentroMesh(const Punto& p, Triangolo* triang)
     {
@@ -86,21 +148,58 @@ namespace ProjectLibrary
         return result;
     }
 
+    void Mesh::ControlloDelaunay(list<unsigned int>& coda)
+    {
+        vector<Lato>* vl = &_listaLati;
+        while(!(coda.empty())){
+            unsigned int ic = coda.front(); //indice coda
+            Lato latcom = _listaLati[ic]; //lato in comune
+            if(latcom._listIdTr.size() == 2){
+                double somang; //somma angoli
+                array<Punto, 2> vnl; //vertici nuovo lato
+                somang = _listaTriangoli[(latcom._listIdTr)[0]].CalcolaAngolo(latcom) + _listaTriangoli[(latcom._listIdTr)[1]].CalcolaAngolo(latcom);
+                if (somang > M_PI){
+                    for(unsigned int h = 0; h<3; h++){
+                        if(((_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p1) and
+                                (_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p2){
+                            vnl[0] = (_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h];
+                        }
+                        if(((_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h] != latcom._p1) and
+                                (_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h] != latcom._p2){
+                            vnl[1] = (_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h];
+                        }
+                    }
+                    Lato ln = Lato(ic, vnl[0], vnl[1], ic);
+                    _listaLati[ic] = ln;
+                    Triangolo tn1 = Triangolo((latcom._listIdTr)[0], vnl[0], vnl[1], latcom._p1, ic, vl);
+                    _listaTriangoli[(latcom._listIdTr)[0]] = tn1;
+                    Triangolo tn2 = Triangolo((latcom._listIdTr)[1], vnl[0], vnl[1], latcom._p2 ,ic, vl);
+                    _listaTriangoli[(latcom._listIdTr)[1]] = tn2;
+                    for(unsigned int j = 0; j<3; j++){
+                        if ((tn1._lati)[j]._id != ic)
+                            coda.push_back((tn1._lati)[j]._id);
+                    }
+                    for(unsigned int j = 0; j<3; j++){
+                        if ((tn2._lati)[j]._id != ic)
+                            coda.push_back((tn2._lati)[j]._id);
+                    }
+                }
+            }
+            coda.pop_front();
+        }
+    }
+
     Mesh::Mesh(const vector<Punto>& listaPunti)
     {
         unsigned int idlato = 0;
         unsigned int idtriang = 0;
-        list<Punto> PuntiNonEstr;        
-
-        PuntiNonEstr.remove(listaPunti[0]);
-        PuntiNonEstr.remove(listaPunti[1]);
-        PuntiNonEstr.remove(listaPunti[i]);
-
+        list<Punto> PuntiNonEstr;
+        vector<Lato>* ptr_lati = &_listaLati;
         unsigned int n = listaPunti.size() - 1;
         bool ax = true;
-        vector<Punto> vx = MergeSort(listaPunti, 0, n, ax);
+        vector<Punto> vx = SortLibrary::MergeSort(listaPunti, 0, n, ax);
         ax = false;
-        vector<Punto> vy = MergeSort(listaPunti, 0, n, ax);
+        vector<Punto> vy = SortLibrary::MergeSort(listaPunti, 0, n, ax);
 
         array<Punto, 4> v = {vx[0], vx[n], vy[0], vy[n]};
         array<Punto, 3> punti_scelti;
@@ -143,9 +242,7 @@ namespace ProjectLibrary
                     {
                         indici_scelti[j] = (i+j)%4;
                     }
-
                 }
-
             }
             punti_scelti[0]=v[indici_scelti[0]];
             punti_scelti[1]=v[indici_scelti[1]];
@@ -155,7 +252,8 @@ namespace ProjectLibrary
         _listaPunti.push_back(punti_scelti[0]);
         _listaPunti.push_back(punti_scelti[1]);
         _listaPunti.push_back(punti_scelti[2]);
-        Triangolo tr = Triangolo(idtriang++, punti_scelti[0], punti_scelti[1], punti_scelti[2], idlato);
+        Triangolo tr = Triangolo(idtriang, punti_scelti[0], punti_scelti[1], punti_scelti[2], idlato, ptr_lati);
+        idtriang++;
         _listaTriangoli.push_back(tr);
 
         for(unsigned int j = 0; j<listaPunti.size(); j++){
@@ -165,48 +263,32 @@ namespace ProjectLibrary
         }
 
         Triangolo* pr = nullptr;
+        Triangolo tng;
+        list<unsigned int> lcd;
         array<unsigned int, 2> DM;
         for(Punto po : PuntiNonEstr){
             DM = this->DentroMesh(po, pr);
+            PuntiNonEstr.pop_front();
+            _listaPunti.push_back(po);
             if (DM[0] == 1){
                 tr =  *pr;
-                _listaTriangoli.remove(*pr);
-
-                tng = Triangolo(DM[1], po, (tr._vertici)[0], (tr._vertici)[1], idlato);
-                _listaTriangoli.push_back(tng);
-                this->ControlloDelaunay(_listaTriangoli.end());
-
+                tng = Triangolo(DM[1], po, (tr._vertici)[0], (tr._vertici)[1], idlato, ptr_lati);
+                _listaTriangoli[DM[1]] = tng;
                 for(unsigned int k = 1; k<3; k++){
-                    tng = Triangolo(idtriang++, po, (tr._vertici)[k], (tr._vertici)[(k+1)%3], idlato);
-                    _listaTriangoli.push_back(tng);
-                    this->ControlloDelaunay(_listaTriangoli.end());
+                    tng = Triangolo(idtriang, po, (tr._vertici)[k], (tr._vertici)[(k+1)%3], idlato, ptr_lati);
+                    idtriang++;
+                    _listaTriangoli.push_back(tng);                    
                 }
+                for(unsigned int i = 0; i<3; i++){
+                        lcd.push_back((tr._lati)[i]._id);
+                    }
+                this->ControlloDelaunay(lcd);
             }else{
-                this->CollegaSenzaIntersez(po);
+                this->CollegaSenzaIntersezioni(po);
             }
             PuntiNonEstr.pop_front();
         }
     }
-
-    void Mesh::ControlloDelaunay(list<Triangolo>& listaTriangoli, queue<Triangolo>& q_t):
-    {
-        map <unsigned int, bool> Triangoli_visti;
-        unsigned int n= listaTriangoli.size() - 1;
-        Triangolo t1,t2;
-
-        for ( Triangolo t : listaTriangoli)
-            Triangoli_visti.insert(t.id, false);
-
-        while(!q_t.empty())
-        {
-            t1 = q_t.front();
-
-
-        }
-
-    }
-
-
 
     bool IOMesh::ImportPunti(vector<Punto>& listaPunti, const string& FileName){
         ifstream file;
@@ -279,76 +361,9 @@ namespace ProjectLibrary
         return true;
     }
 
-    void Triangolo::OrdinamentoAntiorario()
-    {
-        double Area = (0.5)*( (_vertici[0]._x*_vertici[1]._y) +
-                      (_vertici[0]._y*_vertici[2]._x) + (_vertici[1]._x*_vertici[2]._y)
-                    - (_vertici[2]._x*_vertici[1]._y) - (_vertici[2]._y*_vertici[0]._x)
-                    - (_vertici[1]._x*_vertici[0]._y) );
 
-        if (Area < 0)       //TOLLERANZA
-        {
-            Punto a = _vertici[1];
-            _vertici[1] = _vertici[2];
-            _vertici[2] = a;
-        }
-
-    }
-
-    double Triangolo::CalcolaAngolo(const Lato& segm)
-    {
-    unsigned int l1 = 3;
-    unsigned int l2 = 3;
-    for (unsigned int i = 0; i < 3; i++)
-    {
-        if ( _lati[i]._id != segm._id)
-        {
-           if(  l1 == 3)
-           {
-               l1 = i;
-           }
-           else if ( l2 == 3)
-           {
-               l2 = i;
-           }
-        }
-    }
-        double cosenoAngolo = (pow(_lati[l1]._length,2) + pow(_lati[l2]._length,2) - (segm._length * segm._length)) / (2 * _lati[l1]._length * _lati[l2]._length);
-        double angoloRad = acos(cosenoAngolo);
-        // double angoloDeg = angoloRad * 180.0 / M_PI;
-        return angoloRad;
-    }
-
-    string Triangolo::Show()
-    {
-        string final;
-        final = to_string(_id) + " ";
-
-        for (unsigned int i = 0 ; i<3 ; i++){
-            final = final + " " + _vertici[i].Show();
-        }
-
-        for (unsigned int i = 0 ; i<3 ; i++){
-            final = final + " " + _lati[i].Show();
-        }
-
-        return final;
-    }
-
-    array<unsigned int, 2> Triangolo::CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat){
-        for (unsigned int k = 0; k<veclat->size(); k++){
-            if((a != (*veclat)[k]._p1 && b == (*veclat)[k]._p2)||
-                (b != (*veclat)[k]._p1 && a == (*veclat)[k]._p2)){
-                l = &lat;
-                return {1,(*veclat)[k]._id};
-            }
-        }
-        return {0,0};
-    }
     
-    double crossProduct(Punto& p1, Punto& p2) {
-        return (p1._x * p2._y - p1._y * p2._x);
-    }
+
 
 
 }
