@@ -11,7 +11,7 @@ int main()
     else{
         Mesh mesh = Mesh(List_punti);
         //Mesh.Show();
-        if(!(IO.ExportMesh(Mesh, "./Result/")))
+        if(!(IO.ExportMesh(mesh, "./Result/")))
             return -2;
     }
     return 0;

@@ -36,6 +36,8 @@ namespace ProjectLibrary
         Punto(const Punto& p);
         Punto(){}
         string Show();
+
+        Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; return *this;}
     };
 
     inline double normSquared(const double& x, const double& y)
@@ -71,6 +73,9 @@ namespace ProjectLibrary
         Lato(const Lato& lat);
         Lato(){}
         string Show();
+
+        Lato& operator=(const Lato& l){_id = l._id; _p1 = l._p1; _p2 = l._p2; _length = l._length;
+            _listIdTr = l._listIdTr; return *this;}
     };
 
     class Triangolo
@@ -82,14 +87,16 @@ namespace ProjectLibrary
         array<Punto, 3> _vertici;
         array<Lato, 3> _lati;
     public:        
-        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
-                  vector<Lato>*& vlat);
+        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3,
+                  unsigned int& idlato, vector<Lato>*& vlat);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
         array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
         double CalcolaAngolo(const Lato& segm);
         void OrdinamentoAntiorario();
         string Show();
+        Triangolo& operator=(const Triangolo& t){_id = t._id; _vertici = t._vertici; _lati = t._lati;
+            return *this;}
     };
 
     class Mesh

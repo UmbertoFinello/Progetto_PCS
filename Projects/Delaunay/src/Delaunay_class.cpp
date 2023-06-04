@@ -82,8 +82,8 @@ namespace ProjectLibrary
 
     array<unsigned int, 2> Triangolo::CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat){
         for (unsigned int k = 0; k<veclat->size(); k++){
-            if((a != (*veclat)[k]._p1 && b == (*veclat)[k]._p2)||
-                (b != (*veclat)[k]._p1 && a == (*veclat)[k]._p2)){
+            if((a == (*veclat)[k]._p1 && b == (*veclat)[k]._p2)||
+                (b == (*veclat)[k]._p1 && a == (*veclat)[k]._p2)){
                 return {1,(*veclat)[k]._id};
             }
         }
@@ -118,16 +118,18 @@ namespace ProjectLibrary
     {}
 
     string Triangolo::Show(){
-        return to_string(_id) + " " + to_string(_vertici[0]._id) + "," + to_string(_vertici[1]._id) + "," + to_string(_vertici[2]._id)
-                + " " + to_string(_lati[0]._id) + "," + to_string(_lati[1]._id) + "," + to_string(_lati[2]._id);
+        return to_string(_id) + " " + to_string(_vertici[0]._id) + "," + to_string(_vertici[1]._id) + "," +
+               to_string(_vertici[2]._id) + " " + to_string(_lati[0]._id) + "," +to_string(_lati[1]._id) +
+               "," + to_string(_lati[2]._id);
     }
     
     array<unsigned int, 2> Mesh::DentroMesh(const Punto& p, Triangolo* triang)
     {
         unsigned int ident = 0;
         array<unsigned int, 2> result = {0,0};
-        for (Triangolo tr :  _listaTriangoli)
-        {
+        Triangolo tr;
+        for (unsigned int k = 0; k<_listaTriangoli.size(); k++) {
+            tr = _listaTriangoli[k];
             double expr1 = tr._vertici[2]._x - tr._vertici[0]._x;
             double expr2 = tr._vertici[2]._y - tr._vertici[0]._y;
             Punto v1 = Punto(ident, expr1, expr2);
@@ -141,7 +143,7 @@ namespace ProjectLibrary
             double dot2 = crossProduct(v1, v2);
             if (dot1 >= 0 && dot2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
                 result  = {1, tr._id};
-                triang = &tr;
+                triang = &_listaTriangoli[k];
                 return result;
             }
         }
@@ -196,10 +198,12 @@ namespace ProjectLibrary
         list<Punto> PuntiNonEstr;
         vector<Lato>* ptr_lati = &_listaLati;
         unsigned int n = listaPunti.size() - 1;
-        bool ax = true;
-        vector<Punto> vx = SortLibrary::MergeSort(listaPunti, 0, n, ax);
+        vector<Punto> vx = listaPunti;
+        bool ax = true;        
+        SortLibrary::MergeSort(vx, 0, n, ax);
         ax = false;
-        vector<Punto> vy = SortLibrary::MergeSort(listaPunti, 0, n, ax);
+        vector<Punto> vy = listaPunti;
+        SortLibrary::MergeSort(vy, 0, n, ax);
 
         array<Punto, 4> v = {vx[0], vx[n], vy[0], vy[n]};
         array<Punto, 3> punti_scelti;
@@ -244,7 +248,7 @@ namespace ProjectLibrary
                     }
                 }
             }
-            punti_scelti[0]=v[indici_scelti[0]];
+            punti_scelti[0]= v[indici_scelti[0]];
             punti_scelti[1]=v[indici_scelti[1]];
             punti_scelti[2]=v[indici_scelti[2]];
         }
@@ -284,7 +288,7 @@ namespace ProjectLibrary
                     }
                 this->ControlloDelaunay(lcd);
             }else{
-                this->CollegaSenzaIntersezioni(po);
+               // this->CollegaSenzaIntersezioni(po);
             }
             PuntiNonEstr.pop_front();
         }
