@@ -1,5 +1,5 @@
 #include "Delaunay_class.hpp"
-#include "Sorting.hpp"
+#include "sorting.hpp"
 
 using namespace SortLibrary;
 
@@ -86,8 +86,61 @@ namespace ProjectLibrary
         return result;
     }
 
+    void Mesh::CollegaSenzaIntersez(const Punto& Pnew)
+    {
+        unsigned int counter = 0;
+        vector<Punto> ptok;
+        bool noaccetto = false;
+        bool nocollineari = false;
+
+        for( const Point& p : _esterni._p1)
+        {
+
+            for( const Lato& l : _esterni)
+            {
+                Punto dir1 = Pnew - p;
+                Punto dir2 = l._p2 - l._p1;
+                double ProdVett = dir1._x * dir2._y - dir1._y * dir2._x;
+                // controllo determinante
+                if( (ProdVett) != 0)
+                {
+                    // non mi interessa l'id
+                    // point è la slz del sistema lineare
+                    Punto point = Punto(0,((p._x - Pnew._x)*dir2._y-(p._y - Pnew._y)*dir2._x)/ProdVett,
+                                          ((p._y - Pnew._y)*dir1._x-(p._x - Pnew._x)*dir1._y)/ProdVett);
+
+                    if( (point._x >= min(l._p1._x,l._p2._x)) && (point._x <= max(l._p1._x,l._p2._x)) &&
+                        (point._y >= min(l._p1._y,l._p2._y)) && (point._y <= max(l._p1._y,l._p2._y)) &&
+                        (point._x >= min(Pnew._x,p._x)) && (point._x <= max(Pnew._x,p._x)) &&
+                        (point._y >= min(Pnew._y,p._y)) && (point._y <= max(Pnew._y,p._y)) )
+                    {
+                        if(point == l._p1 || point == l._p2)
+                        {
+                            counter = counter + 1;
+                            if (counter >2)
+                            {
+                                nocollineari = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            noaccetto=true;
+                            break;
+                        }
+                    }
+                }
+            }
+            ptok.push_back(p);
+        }
+
+
+
+    }
+
     Mesh::Mesh(const vector<Punto>& listaPunti)
     {
+        // aggiungere inizializzazione di esterni
         unsigned int idlato = 0;
         unsigned int idtriang = 0;
         list<Punto> PuntiNonEstr;        

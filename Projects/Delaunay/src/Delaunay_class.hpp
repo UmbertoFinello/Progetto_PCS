@@ -102,11 +102,13 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
+        Punto* _inizHull;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
         void ControlloDelaunay(Triangolo& triang);
+        void CollegaSenzaIntersez(const Punto& p);
     };
 
 
