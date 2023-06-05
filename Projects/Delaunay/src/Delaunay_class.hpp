@@ -110,7 +110,7 @@ namespace ProjectLibrary
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
-        void ControlloDelaunay(list<unsigned int>& coda);
+        void ControlloDelaunay(list<array<unsigned int, 2>>& coda);
         void CollegaSenzaIntersezioni(Punto& newp);
 
     };

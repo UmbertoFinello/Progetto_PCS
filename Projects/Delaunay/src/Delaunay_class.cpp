@@ -40,7 +40,7 @@ namespace ProjectLibrary
         return to_string(_id) + " " + to_string(_p1._id) + " " + to_string(_p2._id) + " " + to_string(_length) + " " + a;
     }
 
-    void Triangolo::OrdinamentoAntiorario()
+    /*void Triangolo::OrdinamentoAntiorario()
     {
         double Area = (0.5)*( (_vertici[0]._x*_vertici[1]._y) +
                       (_vertici[0]._y*_vertici[2]._x) + (_vertici[1]._x*_vertici[2]._y)
@@ -55,6 +55,7 @@ namespace ProjectLibrary
         }
 
     }
+    */
 
     double Triangolo::CalcolaAngolo(const Lato& segm)
     {
@@ -80,6 +81,7 @@ namespace ProjectLibrary
         return angoloRad;
     }
 
+    /*
     array<unsigned int, 2> Triangolo::CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat){
         for (unsigned int k = 0; k<veclat->size(); k++){
             if((a == (*veclat)[k]._p1 && b == (*veclat)[k]._p2)||
@@ -89,6 +91,7 @@ namespace ProjectLibrary
         }
         return {0,0};
     }
+    */
 
     Triangolo::Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, unsigned int& idlato,
                          vector<Lato>*& vlat):
@@ -150,17 +153,20 @@ namespace ProjectLibrary
         return result;
     }
 
-    void Mesh::ControlloDelaunay(list<unsigned int>& coda)
+    void Mesh::ControlloDelaunay(list<array<unsigned int, 2>>& coda)
     {
         vector<Lato>* vl = &_listaLati;
+        array<unsigned int, 2> fc; //fronte coda
+        array<unsigned int, 2> nec; //nuovi elementi coda
         while(!(coda.empty())){
-            unsigned int ic = coda.front(); //indice coda
-            Lato latcom = _listaLati[ic]; //lato in comune
+            fc = coda.front(); //indice coda
+            Lato latcom = _listaLati[fc[0]]; //lato in comune
             if(latcom._listIdTr.size() == 2){
                 double somang; //somma angoli
                 array<Punto, 2> vnl; //vertici nuovo lato
                 somang = _listaTriangoli[(latcom._listIdTr)[0]].CalcolaAngolo(latcom) + _listaTriangoli[(latcom._listIdTr)[1]].CalcolaAngolo(latcom);
                 if (somang > M_PI){
+
                     for(unsigned int h = 0; h<3; h++){
                         if(((_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p1) and
                                 (_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p2){
@@ -171,18 +177,18 @@ namespace ProjectLibrary
                             vnl[1] = (_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h];
                         }
                     }
-                    Lato ln = Lato(ic, vnl[0], vnl[1], ic);
-                    _listaLati[ic] = ln;
-                    Triangolo tn1 = Triangolo((latcom._listIdTr)[0], vnl[0], vnl[1], latcom._p1, ic, vl);
+                    Lato ln = Lato(fc[0], vnl[0], vnl[1], fc[0]);
+                    _listaLati[fc[0]] = ln;
+                    Triangolo tn1 = Triangolo((latcom._listIdTr)[0], vnl[0], vnl[1], latcom._p1, fc[0], vl);
                     _listaTriangoli[(latcom._listIdTr)[0]] = tn1;
-                    Triangolo tn2 = Triangolo((latcom._listIdTr)[1], vnl[0], vnl[1], latcom._p2 ,ic, vl);
+                    Triangolo tn2 = Triangolo((latcom._listIdTr)[1], vnl[0], vnl[1], latcom._p2 , fc[0], vl);
                     _listaTriangoli[(latcom._listIdTr)[1]] = tn2;
                     for(unsigned int j = 0; j<3; j++){
-                        if ((tn1._lati)[j]._id != ic)
+                        if ((tn1._lati)[j]._id != fc[0])
                             coda.push_back((tn1._lati)[j]._id);
                     }
                     for(unsigned int j = 0; j<3; j++){
-                        if ((tn2._lati)[j]._id != ic)
+                        if ((tn2._lati)[j]._id != fc[0])
                             coda.push_back((tn2._lati)[j]._id);
                     }
                 }
