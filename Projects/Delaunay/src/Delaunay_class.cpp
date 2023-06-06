@@ -95,9 +95,9 @@ namespace ProjectLibrary
             Punto v1 = tr._vertici[2]-tr._vertici[0];
             Punto v2 = tr._vertici[1]-tr._vertici[0];
             Punto v3 = p-tr._vertici[0];
-            double dot1 = crossProduct(v1, v3);
-            double dot2 = crossProduct(v1, v2);
-            if (dot1 >= 0 && dot2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
+            double cx1 = crossProduct(v1, v3);
+            double cx2 = crossProduct(v1, v2);
+            if (cx1 >= 0 && cx2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
                 result  = {1, tr._id};
                 return result;
             }
