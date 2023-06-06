@@ -107,43 +107,80 @@ namespace ProjectLibrary
 
     void Mesh::ControlloDelaunay(list<array<unsigned int, 2>>& coda)
     {
-        vector<Lato>* vl = &_listaLati;
         array<unsigned int, 2> fc; //fronte coda
         array<unsigned int, 2> nec; //nuovi elementi coda
+        array<unsigned int, 2> ix; //indici triangoli
+        array<unsigned int, 2> tv_i;
+        array<unsigned int, 2> nt_i;
+        array<Punto, 2> pv;
+        unsigned int id_nt; //id nuovo triangolo controllo
         while(!(coda.empty())){
             fc = coda.front(); //indice coda
+            ix[0] = fc[1];
             Lato latcom = _listaLati[fc[0]]; //lato in comune
+            pv[0] = latcom._p1;
+            pv[1] = latcom._p2;
             if(latcom._listIdTr.size() == 2){
                 double somang; //somma angoli
                 array<Punto, 2> vnl; //vertici nuovo lato
-                somang = _listaTriangoli[(latcom._listIdTr)[0]].CalcolaAngolo(latcom) + _listaTriangoli[(latcom._listIdTr)[1]].CalcolaAngolo(latcom);
+                somang = _listaTriangoli[fc[1]].CalcolaAngolo(latcom) + _listaTriangoli[id_nt].CalcolaAngolo(latcom);
                 if (somang > M_PI){
-
+                    for(unsigned int k = 0; k<2; k++){
+                        if (latcom._listIdTr[k] != fc[1])
+                            id_nt = latcom._listIdTr[k];
+                    }
+                    ix[1] = id_nt;
+                    for(unsigned int j = 0; j<3; j++){
+                        if ((_listaTriangoli[id_nt]._lati)[j]._id != fc[0])
+                            nec = {(tn1._lati)[j]._id, id_nt};
+                        coda.push_back(nec);
+                    }
                     for(unsigned int h = 0; h<3; h++){
-                        if(((_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p1) and
-                                (_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h] != latcom._p2){
-                            vnl[0] = (_listaTriangoli[(latcom._listIdTr)[0]]._vertici)[h];
+                        if(((_listaTriangoli[fc[1]]._vertici)[h] != latcom._p1) and
+                                (_listaTriangoli[fc[1]]._vertici)[h] != latcom._p2){
+                            vnl[0] = (_listaTriangoli[fc[1]]._vertici)[h];
                         }
-                        if(((_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h] != latcom._p1) and
-                                (_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h] != latcom._p2){
-                            vnl[1] = (_listaTriangoli[(latcom._listIdTr)[1]]._vertici)[h];
+                        if(((_listaTriangoli[id_nt]._vertici)[h] != latcom._p1) and
+                                (_listaTriangoli[id_nt]._vertici)[h] != latcom._p2){
+                            vnl[1] = (_listaTriangoli[id_nt]._vertici)[h];
                         }
                     }
-                    Lato ln = Lato(fc[0], vnl[0], vnl[1], fc[0]);
+                    Lato ln = Lato(fc[0], vnl[0], vnl[1], fc[1]);
                     _listaLati[fc[0]] = ln;
-                    Triangolo tn1 = Triangolo((latcom._listIdTr)[0], vnl[0], vnl[1], latcom._p1, fc[0], vl);
-                    _listaTriangoli[(latcom._listIdTr)[0]] = tn1;
-                    Triangolo tn2 = Triangolo((latcom._listIdTr)[1], vnl[0], vnl[1], latcom._p2 , fc[0], vl);
-                    _listaTriangoli[(latcom._listIdTr)[1]] = tn2;
-                    for(unsigned int j = 0; j<3; j++){
-                        if ((tn1._lati)[j]._id != fc[0])
-                            coda.push_back((tn1._lati)[j]._id);
+                    _listaLati[fc[0]]._listIdTr.push_back(id_nt);
+                    for (unsigned int i = 0; i<3; i++){
+                        if(latcom._p1 == _(listaTriangoli[fc[1]]._vertici)[i])
+                            tv_i[0] = i;
+                        if(latcom._p1 == _(listaTriangoli[id_nt]._vertici)[i])
+                            nt_i[0] = i;
+                        if(latcom._p2 == _(listaTriangoli[fc[1]]._vertici)[i])
+                            tv_i[1] = i;
+                        if(latcom._p2 == _(listaTriangoli[id_nt]._vertici)[i])
+                            nt_i[1] = i;
                     }
-                    for(unsigned int j = 0; j<3; j++){
-                        if ((tn2._lati)[j]._id != fc[0])
-                            coda.push_back((tn2._lati)[j]._id);
-                    }
+                    for(unsigned int g = 0; g<2; g++){
+                        if ((_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1] != pv[g]){
+                            B = (_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1];
+                            l1 = (_listaTriangoli[fc[1]]._lati)[tv_i[g]];
+                            C = (_listaTriangoli[id_nt]._vertici)[nt_i[g]+1];
+                            l2 = (_listaTriangoli[id_nt]._lati)[nt_i[g]];
+                        }else{
+                            B = (_listaTriangoli[id_nt]._vertici)[nt_i[g]+1];
+                            l1 = (_listaTriangoli[id_nt].lati)[nt_i[g]];
+                            C = (_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1];
+                            l2 = (_listaTriangoli[fc[1]]._lati)[tv_i[g]];
+                        }
+                        for(unsigned int z = 0; z<(_listaLati[l1._id]._listIdTr).size(); z++)
+                            if ((_listaLati[l1._id]._listIdTr)[z] == ix[(g+1)%2])
+                                (_listaLati[l1._id]._listIdTr)[z] = ix[g];
+                        for(unsigned int z = 0; z<(_listaLati[l2._id]._listIdTr).size(); z++)
+                            if ((_listaLati[l2._id]._listIdTr)[z] == ix[(g+1)%2])
+                                (_listaLati[l2._id]._listIdTr)[z] = ix[g];
+                        Triangolo tn = Triangolo(ix[g], pv[g], B, C , l1, ln, l2);
+                        _listaTriangoli[ix[g]] = tn;
+                        }
                 }
+            }
             }
             coda.pop_front();
         }
@@ -273,7 +310,7 @@ namespace ProjectLibrary
                 idl3 = idlato;
                 _listaLati.push_back(l3);
                 idlato++;
-                (_listaLati[idl2]._listIdTr)[1] = idtriang;
+                (_listaLati[idl2]._listIdTr).push_back(idtriang);
                 for(unsigned int i = 0; i<2; i++){
                     if((_listaLati[(tr._lati)[1]._id]._listIdTr)[i] == DM[1]){
                         (_listaLati[(tr._lati)[1]._id]._listIdTr)[i] = tng._id;
@@ -286,8 +323,8 @@ namespace ProjectLibrary
                 _listaTriangoli.push_back(tng);
                 il_it = {(tr._lati)[1]._id, tng._id};
                 lcd.push_back(il_it);
-                (_listaLati[idl1]._listIdTr)[1] = idtriang;
-                (_listaLati[idl3]._listIdTr)[1] = idtriang;
+                (_listaLati[idl1]._listIdTr).push_back(idtriang);
+                (_listaLati[idl3]._listIdTr).push_back(idtriang);
                 tng = Triangolo(idtriang, po, (tr._vertici)[2], (tr._vertici)[0], l3, (tr._lati)[2], l1);
                 idtriang++;
                 _listaTriangoli.push_back(tng);
