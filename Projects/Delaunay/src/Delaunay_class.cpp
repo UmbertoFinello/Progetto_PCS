@@ -178,15 +178,16 @@ namespace ProjectLibrary
                                 (_listaLati[l2._id]._listIdTr)[z] = ix[g];
                         Triangolo tn = Triangolo(ix[g], pv[g], B, C , l1, ln, l2);
                         _listaTriangoli[ix[g]] = tn;
-                        }
+                    }
                 }
             }
-            }
             coda.pop_front();
-	}
-}
+        }
 
-    bool accettabile(Punto& pnew, Punto*& v)
+	}
+
+
+    bool Mesh::accettabile(Punto& pnew, Punto*& v)
     {
         unsigned int counter = 0;
         bool result = true;
@@ -389,17 +390,13 @@ namespace ProjectLibrary
                 v[0]= vx[1];
                 v[2]= vy[1];
             }
-
             double AreaMax = 0;
             double Area = 0;
-
             array<unsigned int,3> indici_scelti = {0,0,0};
-
             for (unsigned int i = 0; i< 4;i++)
             {
                 Area = 0.5*abs ( (v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
                                  (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x)   );
-
                 if (AreaMax < Area) //TOLLERANZA
                 {
                     AreaMax = Area;
