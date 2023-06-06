@@ -86,56 +86,175 @@ namespace ProjectLibrary
         return result;
     }
 
-    void Mesh::CollegaSenzaIntersez(const Punto& Pnew)
+    bool accettabile(Punto& pnew, Punto*& v)
     {
         unsigned int counter = 0;
-        vector<Punto> ptok;
-        bool noaccetto = false;
-        bool nocollineari = false;
-
-        for( const Point& p : _esterni._p1)
+        bool result = true;
+        Punto* w = v;
+        Punto* wsucc;
+        w2 = (*w)._succ;
+        while(wsucc != (*v)._succ)
         {
-
-            for( const Lato& l : _esterni)
+            // ricontrollare per l'antisimmetria del prodotto scalare
+            Punto dir1 = pnew - *v;
+            Punto dir2 = *wsucc - *w;
+            if(abs(crossProduct(dir1,dir2)) < tolleranza ) // da rivedere, tolleranza è dei punti, andrà bene uguale?
             {
-                Punto dir1 = Pnew - p;
-                Punto dir2 = l._p2 - l._p1;
-                double ProdVett = dir1._x * dir2._y - dir1._y * dir2._x;
-                // controllo determinante
-                if( (ProdVett) != 0)
-                {
-                    // non mi interessa l'id
-                    // point è la slz del sistema lineare
-                    Punto point = Punto(0,((p._x - Pnew._x)*dir2._y-(p._y - Pnew._y)*dir2._x)/ProdVett,
-                                          ((p._y - Pnew._y)*dir1._x-(p._x - Pnew._x)*dir1._y)/ProdVett);
+                // non mi interessa l'id
+                // point è la slz del sistema lineare
+                Punto point = Punto(0,(( (*v)._x - Pnew._x)*dir2._y-((*v)._y - Pnew._y)*dir2._x)/crossProduct(dir1,dir2),
+                                      (( (*v)._y - Pnew._y)*dir1._x-((*v)._x - Pnew._x)*dir1._y)/crossProduct(dir1,dir2));
 
-                    if( (point._x >= min(l._p1._x,l._p2._x)) && (point._x <= max(l._p1._x,l._p2._x)) &&
-                        (point._y >= min(l._p1._y,l._p2._y)) && (point._y <= max(l._p1._y,l._p2._y)) &&
-                        (point._x >= min(Pnew._x,p._x)) && (point._x <= max(Pnew._x,p._x)) &&
-                        (point._y >= min(Pnew._y,p._y)) && (point._y <= max(Pnew._y,p._y)) )
+                if( (point._x >= min((*w)._x,(*wsucc)._x)) && (point._x <= max((*w)._x,(*wsucc)._x)) &&
+                    (point._y >= min((*w)._y,(*wsucc)._y)) && (point._y <= max((*w)._y,(*wsucc)._y)) &&
+                    (point._x >= min(Pnew._x,(*v)._x)) && (point._x <= max(Pnew._x,(*v)._x)) &&
+                    (point._y >= min(Pnew._y,(*v)._y)) && (point._y <= max(Pnew._y,(*v)._y)) )
+                {
+                    if(point == *w || point == *wsucc)
                     {
-                        if(point == l._p1 || point == l._p2)
+                        counter = counter + 1;
+                        if (counter >2)
                         {
-                            counter = counter + 1;
-                            if (counter >2)
-                            {
-                                nocollineari = true;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            noaccetto=true;
+                            result = false;
                             break;
                         }
                     }
+                    else
+                    {
+                        result = false;
+                        break;
+                    }
                 }
             }
-            ptok.push_back(p);
+            wsucc = &(*wsucc)._succ;
+            wsucc = &(*w)._succ;
+        }
+        return result;
+    }
+
+    void Mesh::CollegaSenzaIntersez(const Punto& pnew, unsigned int& id_t, unsigned int& id_l )
+    {
+        // trovo il primo e l'ultimo punto e lato utile
+        Punto* finePunto = _hullBeginPunto;
+        Punto* inizioPunto = (*_hullBeginPunto)._prec;
+        Lato* fineLato = _hullBeginLato;
+        Lato* inizioLato = (*_hullBeginLato)._prec;
+        bool cambiaInizio = false;
+        bool b = true; // variabile booleana di comodo
+        if(accettabile(pnew,finePunto))
+        {
+            while(b)
+            {
+                finePunto = (*finePunto)._succ;
+                fineLato = (*fineLato)._succ;
+                b = accettabile(pnew,finePunto);
+            }
+            // in v abbiamo l'utimo false, il prec del puntato di finePunto sarà l'ultimo accettabile
+            finePunto = (*finePunto)._prec;
+            fineLato = (*fineLato)._prec;
+            if(accettabile(pnew,inizioPunto))
+            {
+                cambiaInizio = true;
+                b = true;
+                while(b)
+                {
+                    inizioPunto = (*inizioPunto)._prec;
+                    inizioLato = (*inizioLato)._prec;
+                    b = accettabile(pnew,inizioPunto);
+                }
+            // in q abbiamo il primo false, il succ del puntato di q sarà il primo accettabile
+                inizioPunto = (*inizioPunto)._succ;
+                inizioPLato = (*inizioLato)._succ;
+            }
+            else
+            {
+                inizioPunto = _hullBeginPunto;
+                inizioLato = _hullBeginLato;
+            }
+        }
+        else
+        {
+            // il controllo sopra lo faccio su v, se è falso metto comunque in q
+            // quello che io misuro come il primo vero, quindi passo a v e modifico
+            // opportunamente q, rifaccio iol ciclo
+            inizioPunto = (*_hullBeginPunto)._succ;
+            inizioLato = (*_hullBeginLato)._succ;
+            b = accettabile(pnew,inizioPunto);
+            while(!b)
+            {
+                inizioPunto = (*inizioPunto)._succ;
+                inizioLato = (*inizioLato)._succ;
+                b = accettabile(pnew,inizioPunto);
+            }
+            // q a questo punto avrà il primo accettabile
+            finePunto = (*inizioPunto)._succ;
+            fineLato = (*inizioLato)._succ;
+            b = accettabile(pnew,finePunto);
+            while(b)
+            {
+                finePunto = (*finePunto)._succ;
+                fineLato = (*fineLato)._succ;
+                b = accettabile(pnew,finePunto);
+            }
+            // in v ho il falso, lo riposto all'ultimo vero
+            finePunto = (*finePunto)._prec;
+            fineLato = (*fineLato)._prec;
         }
 
+        // mi creo tutti i lati utili
+        vector<Lato> newLati;
+        Punto* copiaPunto = inizioPunto;
+        Lato l;
+        // id_t lo modificheremo quando creeremo i triangoli, per ora gli passo
+        // fittiziamente solo una variabile che incremento di volta in volta
+        unsigned int conta = 1;
+        while(copiaPunto == (*finePunto)._succ)
+        {
+            l = Lato(id_l, (*copiaPunto), pnew, id_t + conta);
 
+            if((copiaPunto == inizioPunto)||((*copiaPunto)._succ == finePunto))
+            {
+                conta++;
+            }
+            else
+            {
+                conta++;
+                _listaLati[id_l]._listIdTr.push_back(id_t + conta);
+            }
+            id_l++;
+            newLati.push_back(l);
+        }
+        // la variabile id_t non è stata cambiata ed è come è stata passata al programma
 
+        // creo triangoli
+        // da finire
+        copiaPunto = inizioPunto;
+        Lato* copiaLato = inizioLato;
+        unsigned int i = 0;
+        Triangolo t;
+        while(copiaPunto == (*finePunto)._succ)
+        {
+            t = Triangolo(id,(*copiaPunto),pnew,*((*copiaPunto)._succ),newLati[i],newlati[i+1],*copiaLato);
+            copiaPunto = (*copiaPunto)._succ;
+            copiaLato = (*copiaLato)._succ;
+            _listaTriangoli.push_back(t);
+        }
+        // aggiornamento HullLato
+        pnew._prec = inizioLato;
+        pnew._succ = fineLato;
+        (*inizioLato).succ = &pnew;
+        (*fineLato).prec = &pnew;
+        // aggiornamento HullPunto
+        pnew._prec = inizioPunto;
+        pnew._succ = finePunto;
+        (*inizioPunto).succ = &pnew;
+        (*finePunto).prec = &pnew;
+        // cambia inizio dell'Hull se serve
+        if (cambiaInizio)
+        {
+            _hullBeginLato= inizioLato;
+            _hullBeginPunto= inizioPunto;
+        }
     }
 
     Mesh::Mesh(const vector<Punto>& listaPunti)

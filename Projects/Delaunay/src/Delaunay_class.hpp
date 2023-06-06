@@ -67,7 +67,7 @@ namespace ProjectLibrary
         Punto _p1;
         Punto _p2;
         double _length;
-        array<unsigned int,2> _listIdTr;
+        vector<unsigned int> _listIdTr;
     public:
         Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
@@ -102,13 +102,15 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
-        Punto* _inizHull;
+        Punto* _hullBeginPunto;
+        Lato* _hullBeginLato;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
         void ControlloDelaunay(Triangolo& triang);
-        void CollegaSenzaIntersez(const Punto& p);
+        void CollegaSenzaIntersez(const Punto& p, const unsigned int& id_t, unsigned int& id_l );
+        bool accettabile(Punto& pnew, Punto*& v);
     };
 
 
