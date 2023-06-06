@@ -91,7 +91,6 @@ TEST(ClassLato, LatoConstructor_pitagora)
 
 }
 
-
 TEST(ClassTriangolo, TriangoloConstructor)
 {
     unsigned int id = 4;
@@ -127,6 +126,7 @@ TEST(ClassTriangolo, TriangoloConstructor)
     EXPECT_EQ(tr3.Show(),right);
 }
 
+
 TEST(TestSorting, TestMergeSort)
 {
     vector<Punto> SortedV_X;
@@ -149,6 +149,25 @@ TEST(TestSorting, TestMergeSort)
 
     EXPECT_EQ(vero, SVX);
     EXPECT_EQ(vero, SVY);
+}
+
+TEST(TestProduct, TestcrossProduct)
+{
+    unsigned int id = 0;
+    double c1 = 1.5;
+    double c2 = 1;
+    double c3 = -1;
+    double c4 = 2.5;
+    Punto p1 = Punto(id, c1, c4);
+    Punto p2 = Punto(id, c3, c3);
+    Punto p3 = Punto(id, c4, c2);
+    double vero1 = 0;
+    double vero2 = -3.5;
+    double vero3 = 6.25;
+
+    EXPECT_EQ(vero1, crossProduct(p3,p3));
+    EXPECT_EQ(vero2, crossProduct(p3,p2));
+    EXPECT_EQ(vero3, crossProduct(p3,p1));
 }
 
 

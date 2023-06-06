@@ -28,6 +28,8 @@ namespace ProjectLibrary
         unsigned int _id;
         double _x;
         double _y;
+        Punto* _succ = nullptr;
+        Punto* _prec = nullptr;
 
         static constexpr double geometricTol = 1.0e-12;
         static constexpr double geometricTol_Squared = max_tolerance(Punto::geometricTol * Punto::geometricTol,
@@ -37,7 +39,15 @@ namespace ProjectLibrary
         Punto(){}
         string Show();
 
-        Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; return *this;}
+        friend Punto operator-(const Punto& p1, const Punto& p2){
+            unsigned int id = p1._id;
+            double x = p1._x-p2._x;
+            double y = p1._y-p2._y;
+            return Punto(id, x, y);
+        }
+
+        inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; _succ = p._succ; _prec=p._prec;
+            return *this;}
     };
 
     inline double normSquared(const double& x, const double& y)
@@ -86,9 +96,8 @@ namespace ProjectLibrary
         unsigned int _id;
         array<Punto, 3> _vertici;
         array<Lato, 3> _lati;
-    public:        
-        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3,
-                  unsigned int& idlato, vector<Lato>*& vlat);
+    public:
+        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, const Lato& l1, const Lato& l2, const Lato& l3);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
         array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
@@ -106,11 +115,12 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
+        Punto* _hullBegin;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
-        array<unsigned int, 2> DentroMesh(const Punto& p, Triangolo* triang);
         void ControlloDelaunay(list<array<unsigned int, 2>>& coda);
+        array<unsigned int, 2> DentroMesh(const Punto& p);
         void CollegaSenzaIntersezioni(Punto& newp);
 
     };
