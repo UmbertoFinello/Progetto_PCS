@@ -115,14 +115,15 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
-        Punto* _hullBegin;
+        Punto* _hullBeginPunto;
+        Lato* _hullBeginLato;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         void ControlloDelaunay(list<array<unsigned int, 2>>& coda);
         array<unsigned int, 2> DentroMesh(const Punto& p);
-        void CollegaSenzaIntersezioni(Punto& newp);
-
+        void CollegaSenzaIntersez(const Punto& p, const unsigned int& id_t, unsigned int& id_l );
+        bool accettabile(Punto& pnew, Punto*& v);
     };
 
     class IOMesh
