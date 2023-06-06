@@ -183,9 +183,7 @@ namespace ProjectLibrary
             }
             coda.pop_front();
         }
-
 	}
-
 
     bool Mesh::accettabile(Punto& pnew, Punto*& v)
     {
@@ -424,7 +422,7 @@ namespace ProjectLibrary
         _listaPunti.push_back(punti_scelti[0]);
         _listaPunti.push_back(punti_scelti[1]);
         _listaPunti.push_back(punti_scelti[2]);
-        _hullBegin = &_listaPunti[0];
+        _hullBeginPunto = &_listaPunti[0];
         _listaPunti[0]._prec = &_listaPunti[2];
         _listaPunti[1]._prec = &_listaPunti[0];
         _listaPunti[2]._prec = &_listaPunti[1];
@@ -437,6 +435,13 @@ namespace ProjectLibrary
             _listaLati.push_back(l);
             idlato++;
         }
+        _hullBeginLato = &_listaLati[0];
+        _listaLati[0]._prec = &_listaLati[2];
+        _listaLati[1]._prec = &_listaLati[0];
+        _listaLati[2]._prec = &_listaLati[1];
+        _listaLati[0]._succ = &_listaLati[1];
+        _listaLati[1]._succ = &_listaLati[2];
+        _listaLati[2]._succ = &_listaLati[0];
         Triangolo tr = Triangolo(idtriang, _listaPunti[0] ,_listaPunti[1], _listaPunti[2],
                                  _listaLati[0], _listaLati[1], _listaLati[2]);
         idtriang++;
