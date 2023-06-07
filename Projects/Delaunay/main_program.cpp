@@ -6,6 +6,7 @@ int main()
 {
     IOMesh IO = IOMesh();
     vector<Punto> List_punti;
+
     if(!(IO.ImportPunti(List_punti,"./Dataset/Test1.csv")))
         return -1;
     else{
@@ -15,5 +16,6 @@ int main()
             return -2;
     }
     return 0;
+
 
 }

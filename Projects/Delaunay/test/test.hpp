@@ -10,7 +10,7 @@ using namespace ProjectLibrary;
 using namespace SortLibrary;
 
 
-TEST(ClassPunto, PuntoConstructor)
+TEST(TestClassPunto, TestPuntoConstructor)
 {
     unsigned int id = 4;
     double x = 0;
@@ -23,7 +23,7 @@ TEST(ClassPunto, PuntoConstructor)
     EXPECT_EQ(p.Show(),right);
 }
 
-TEST(ClassPunto, PuntoCopy)
+TEST(TestClassPunto, TestPuntoCopy)
 {
     unsigned int id = 4;
     double x = 0;
@@ -34,7 +34,7 @@ TEST(ClassPunto, PuntoCopy)
     EXPECT_EQ(copy.Show(),p.Show());
 }
 
-TEST(ClassLato, LatoConstructor_x)
+TEST(TestClassLato, TestLatoConstructor_x)
 {
     unsigned int id = 0;
     double c1 = 0;
@@ -53,7 +53,7 @@ TEST(ClassLato, LatoConstructor_x)
 
 }
 
-TEST(ClassLato, LatoConstructor_y)
+TEST(TestClassLato, TestLatoConstructor_y)
 {
     unsigned int id = 0;
     double c1 = 0;
@@ -72,7 +72,7 @@ TEST(ClassLato, LatoConstructor_y)
 
 }
 
-TEST(ClassLato, LatoConstructor_pitagora)
+TEST(TestClassLato, TestLatoConstructor_pitagora)
 {
     unsigned int id = 0;
     double c1 = 0;
@@ -88,44 +88,54 @@ TEST(ClassLato, LatoConstructor_pitagora)
     Lato l = Lato(id, p1, p2, id);
 
     EXPECT_EQ(l.Show(),right);
-
 }
 
-TEST(ClassTriangolo, TriangoloConstructor)
+
+TEST(TestClassTriangolo, TestTriangoloConstructor)
+{
+    unsigned int id = 4;   
+    unsigned int idp1 = 0;
+    unsigned int idp2 = idp1+1;
+    unsigned int idp3 = idp1+2;
+    unsigned int idl1 = 0;
+    unsigned int idl2 = idl1+1;
+    unsigned int idl3 = idl1+2;
+
+    string right = to_string(id) + " vertici:" + to_string(0) + "," + to_string(1) + "," + to_string(2) + " lati:" +
+        to_string(0) + "," + to_string(1) + "," + to_string(2);
+
+    Triangolo tr = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
+
+    EXPECT_EQ(tr.Show(),right);
+}
+
+TEST(TestClassTriangolo, TestCalcolangoli)
 {
     unsigned int id = 4;
-    unsigned int idlato = 0;
-    unsigned int idl = 0;
+    unsigned int idp1 = 0;
+    unsigned int idp2 = idp1+1;
+    unsigned int idp3 = idp1+2;
+    unsigned int idl1 = 0;
+    unsigned int idl2 = idl1+1;
+    unsigned int idl3 = idl1+2;
     double c1 = 0;
     double c2 = 1;
-    Punto p1 = Punto(idl,c1,c1);
-    idl++;
-    Punto p2 = Punto(idl,c2,c1);
-    idl++;
-    Punto p3 = Punto(idl,c1,c2);
-    vector<Lato> vlat1;
-    idl = 0;
-    Lato l12 = Lato(idl, p1, p2, id);
-    idl++;
-    Lato l23 = Lato(idl, p2, p3, id);
-    vector<Lato> vlat2 = {l12, l23};
-    idl++;
-    Lato l31 = Lato(idl, p3, p1, id);
-    vector<Lato> vlat3 = {l12, l23, l31};
-    string right = to_string(id) + " " + to_string(0) + "," + to_string(1) + "," + to_string(2) + " " +
-        to_string(0) + "," + to_string(1) + "," + to_string(2);
-    vector<Lato>* pvlat = &vlat1;
-    Triangolo tr1 = Triangolo(id, p1, p2, p3, idlato, pvlat);
-    idlato = 2;
-    pvlat = &vlat2;
-    Triangolo tr2 = Triangolo(id, p1, p2, p3, idlato, pvlat);
-    pvlat = &vlat3;
-    Triangolo tr3 = Triangolo(id, p1, p2, p3, idlato, pvlat);
-    EXPECT_EQ(tr1.Show(),right);
-    EXPECT_EQ(tr2.Show(),right);
-    EXPECT_EQ(tr3.Show(),right);
-}
+    Punto p1 = Punto(idp1,c1,c1);
+    Punto p2 = Punto(idp2,c2,c1);
+    Punto p3 = Punto(idp3,c1,c2);
 
+    Lato l1 = Lato(idl1, p1, p2, id);
+    Lato l2 = Lato(idl2, p2, p3, id);
+    Lato l3 = Lato(idl3, p3, p1, id);
+    vector<Lato> vlat = {l1, l2, l3};
+    double right13 = M_PI/4;
+    double right2 = M_PI/2;
+    Triangolo tr = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
+
+    EXPECT_LE(abs(tr.CalcolaAngolo(l1,vlat)-right13), Punto::geometricTol);
+    EXPECT_LE(abs(tr.CalcolaAngolo(l2,vlat)-right2), Punto::geometricTol);
+    EXPECT_LE(abs(tr.CalcolaAngolo(l3,vlat)-right13), Punto::geometricTol);
+}
 
 TEST(TestSorting, TestMergeSort)
 {
@@ -151,6 +161,7 @@ TEST(TestSorting, TestMergeSort)
     EXPECT_EQ(vero, SVY);
 }
 
+
 TEST(TestProduct, TestcrossProduct)
 {
     unsigned int id = 0;
@@ -169,6 +180,8 @@ TEST(TestProduct, TestcrossProduct)
     EXPECT_EQ(vero2, crossProduct(p3,p2));
     EXPECT_EQ(vero3, crossProduct(p3,p1));
 }
+
+
 
 
 

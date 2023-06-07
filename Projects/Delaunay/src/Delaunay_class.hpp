@@ -8,10 +8,6 @@
 #include <fstream>
 #include <Eigen/Dense>
 
-
-#include <queue>
-#include <map>
-
 using namespace std;
 using namespace Eigen;
 
@@ -28,8 +24,6 @@ namespace ProjectLibrary
         unsigned int _id;
         double _x;
         double _y;
-        Punto* _succ = nullptr;
-        Punto* _prec = nullptr;
 
         static constexpr double geometricTol = 1.0e-12;
         static constexpr double geometricTol_Squared = max_tolerance(Punto::geometricTol * Punto::geometricTol,
@@ -46,8 +40,7 @@ namespace ProjectLibrary
             return Punto(id, x, y);
         }
 
-        inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; _succ = p._succ; _prec=p._prec;
-            return *this;}
+        inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; return *this;}
     };
 
     inline double normSquared(const double& x, const double& y)
@@ -78,14 +71,16 @@ namespace ProjectLibrary
         Punto _p2;
         double _length;
         vector<unsigned int> _listIdTr;
+        Lato* _prec = nullptr;
+        Lato* _succ = nullptr;
     public:
-        Lato(unsigned int& id , Punto& p1, Punto& p2, unsigned int& idtr);
+        Lato(unsigned int& id , const Punto& p1, const Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
         Lato(){}
         string Show();
 
         Lato& operator=(const Lato& l){_id = l._id; _p1 = l._p1; _p2 = l._p2; _length = l._length;
-            _listIdTr = l._listIdTr; return *this;}
+            _listIdTr = l._listIdTr; _succ = l._succ; _prec = l._prec; return *this;}
     };
 
     class Triangolo
@@ -94,15 +89,14 @@ namespace ProjectLibrary
     friend class Mesh;
     protected:
         unsigned int _id;
-        array<Punto, 3> _vertici;
-        array<Lato, 3> _lati;
+        array<unsigned int, 3> _vertici;
+        array<unsigned int, 3> _lati;
     public:
-        Triangolo(unsigned int& identificatore, const Punto& p1, const Punto& p2, const Punto& p3, const Lato& l1, const Lato& l2, const Lato& l3);
+        Triangolo(unsigned int& ident, const unsigned int& p1, const unsigned int& p2, const unsigned int& p3,
+                  const unsigned int& l1, const unsigned int& l2, const unsigned int& l3);
         Triangolo(const Triangolo& triang);
         Triangolo(){}
-        array<unsigned int,2> CheckConnection(const Punto& a, const Punto& b, vector<Lato>*& veclat);
-        double CalcolaAngolo(const Lato& segm);
-        void OrdinamentoAntiorario();
+        double CalcolaAngolo(const Lato& segm, vector<Lato>& lst_lat);
         string Show();
         Triangolo& operator=(const Triangolo& t){_id = t._id; _vertici = t._vertici; _lati = t._lati;
             return *this;}
@@ -117,13 +111,14 @@ namespace ProjectLibrary
         vector<Punto> _listaPunti;
         Punto* _hullBeginPunto;
         Lato* _hullBeginLato;
+        list<array<unsigned int,2>> _codaDelaunay;
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
-        void ControlloDelaunay(list<array<unsigned int, 2>>& coda);
+        void ControlloDelaunay();
         array<unsigned int, 2> DentroMesh(const Punto& p);
-        void CollegaSenzaIntersez(const Punto& p, const unsigned int& id_t, unsigned int& id_l );
-        bool accettabile(Punto& pnew, Punto*& v);
+        void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l );
+        bool accettabile(const Punto& pnew, const Punto& v);
     };
 
     class IOMesh
