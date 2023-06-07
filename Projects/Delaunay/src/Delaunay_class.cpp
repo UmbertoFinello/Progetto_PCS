@@ -87,24 +87,99 @@ namespace ProjectLibrary
     
 
     array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
-    {
-        unsigned int ident = 0;
-        array<unsigned int, 2> result = {0,0};
-        Triangolo tr;
-        for (unsigned int k = 0; k<_listaTriangoli.size(); k++) {
-            tr = _listaTriangoli[k];
-            Punto v1 = tr._vertici[2]-tr._vertici[0];
-            Punto v2 = tr._vertici[1]-tr._vertici[0];
-            Punto v3 = p-tr._vertici[0];
-            double cx1 = crossProduct(v1, v3);
-            double cx2 = crossProduct(v1, v2);
-            if (cx1 >= 0 && cx2 >= 0 && (dot1 + dot2) <= crossProduct(v1, v2)){
-                result  = {1, tr._id};
-                return result;
+        {
+            // 0:interno
+            // 1:bordo interno
+            // 2:bordo hull
+            // 3:esterno
+            array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
+            // ricerca esterno/interno
+            Lato* pointer = _hullBeginLato;
+            bool inizio = true; // variabile per non uscire alla prima iteraz.
+            bool in = true;
+            Punto v1 = (*((*pointer)._p2)) - (*((*pointer)._p1));
+            Punto v2 = p - (*((*pointer)._p1));
+            while((pointer != _hullBeginLato) || (inizio==true)){
+                inizio=false;
+                if(abs(crossProduct(v2,v1))<Punto::geometricTol){
+                    result[0]=2;
+                    result[1]=(*pointer)._id;
+                    in = false;
+                    break;
+                }
+                else if (crossProduct(v2,v1)>0){
+                    result[0]=3;
+                    in = false;
+                    break;
+                }
+                pointer = (*pointer)._succ;
             }
+            if(in)
+            {
+
+                array <unsigned int, 3> Punti;
+                array <unsigned int, 3> Lati;
+                bool esciwhile = false;
+                bool ext = true; // true: punto fuori triangolo
+                Lato l = (*_hullBeginLato);
+                unsigned int idCorr=l._listIdTr[0]; // id triangolo vecchio per ricerca
+                while(ext)
+                {
+                    // punti del triangolo
+                    Punti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
+                    Lati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
+                    // verifico che il punto sia interno al triangolo
+                    for(unsigned int i = 0; i<3;i++)
+                    {
+                        v1 = Punti[(i+1)%3]-Punti[i];
+                        v2 = p - Punti[i];
+                        if(abs(crossProduct(v2,v1))<Punto::geometricTol)
+                        {
+                            result[0]=1;
+                            for(unsigned int j = 0; j<3;j++) // j cicla sui lati
+                            {
+                                // trova il lato su cui è il punto
+                                if( (p._x >= min(_listaLati[Lati[j]]._p1._x,_listaLati[Lati[(j+1)%3]]._p2._x)) &&
+                                    (p._x <= max(_listaLati[Lati[j]]._p1._x,_listaLati[Lati[(j+1)%3]]._p2._x)) &&
+                                    (p._y >= min(_listaLati[Lati[j]]._p1._y,_listaLati[Lati[(j+1)%3]]._p2._y)) &&
+                                    (p._y <= max(_listaLati[Lati[j]]._p1._y,_listaLati[Lati[(j+1)%3]]._p2._y)))
+                                {
+                                    result[1]=Lati[j];// gli passo l'id del triangolo
+                                    esciwhile = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else if (crossProduct(v2,v1)<0)
+                        {
+                            result[0]=0;
+                            result[1]=idCorr;
+                            esciwhile = true;
+                            break;
+                        }
+                        if(esciwhile){break;}
+                    }
+                    if(esciwhile){break;} //esco dal while
+                }
+                //(_listaTriangoli[(*_hullBeginLato)._listIdTr])._lati
+                Punto pmax = _listaPunti[Punti[0]]; //primo elemento dei vertici, punto più distante dal punto di cui stiamo cercando la sistemazione
+                double dmax = normSquared(pmax._x - p._x, pmax._y - p._y);
+                for (unsigned int i=1; i<3; i++)
+                {
+                    double dist = normSquared(_listaPunti[Punti[i]]._x - p._x, _listaPunti[Punti[i]]._y - p._y);
+                    if(dist > dmax)
+                    {
+                        dmax = dist;
+                        pmax = _listaPunti[Punti[i]];
+                    }
+                }
+            }
+            if(l._listIdTr[0]==idCorr)
+            {
+
+            }
+            return result;
         }
-        return result;
-    }
 
     void Mesh::ControlloDelaunay()
     {
