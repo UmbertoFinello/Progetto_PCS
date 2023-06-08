@@ -60,6 +60,10 @@ namespace ProjectLibrary
       return !(p1 == p2);
     }
 
+    inline double crossProduct(const Punto& p1, const Punto& p2){
+      return (p1._x * p2._y - p1._y * p2._x);
+    }
+
     class Lato
     {
     friend class Triangolo;
@@ -109,7 +113,6 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
-        Punto* _hullBeginPunto;
         Lato* _hullBeginLato;
         list<array<unsigned int,2>> _codaDelaunay;
     public:
@@ -119,6 +122,7 @@ namespace ProjectLibrary
         array<unsigned int, 2> DentroMesh(const Punto& p);
         void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l );
         bool accettabile(const Punto& pnew, const Punto& v);
+        string Show();
     };
 
     class IOMesh
@@ -128,8 +132,6 @@ namespace ProjectLibrary
             bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
             bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
     };
-   
-    double crossProduct(const Punto& p1, const Punto& p2);
 }
 
 #endif // __DELAUNAY_H

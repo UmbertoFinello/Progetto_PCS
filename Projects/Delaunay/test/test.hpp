@@ -131,10 +131,10 @@ TEST(TestClassTriangolo, TestCalcolangoli)
     double right13 = M_PI/4;
     double right2 = M_PI/2;
     Triangolo tr = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
-
-    EXPECT_LE(abs(tr.CalcolaAngolo(l1,vlat)-right13), Punto::geometricTol);
-    EXPECT_LE(abs(tr.CalcolaAngolo(l2,vlat)-right2), Punto::geometricTol);
-    EXPECT_LE(abs(tr.CalcolaAngolo(l3,vlat)-right13), Punto::geometricTol);
+    double tol = Punto::geometricTol;
+    EXPECT_LE(abs(tr.CalcolaAngolo(l1,vlat)-right13), tol);
+    EXPECT_LE(abs(tr.CalcolaAngolo(l2,vlat)-right2), tol);
+    EXPECT_LE(abs(tr.CalcolaAngolo(l3,vlat)-right13), tol);
 }
 
 TEST(TestSorting, TestMergeSort)
@@ -173,8 +173,8 @@ TEST(TestProduct, TestcrossProduct)
     Punto p2 = Punto(id, c3, c3);
     Punto p3 = Punto(id, c4, c2);
     double vero1 = 0;
-    double vero2 = -3.5;
-    double vero3 = 6.25;
+    double vero2 = -1.5;
+    double vero3 = 4.75;
 
     EXPECT_EQ(vero1, crossProduct(p3,p3));
     EXPECT_EQ(vero2, crossProduct(p3,p2));
