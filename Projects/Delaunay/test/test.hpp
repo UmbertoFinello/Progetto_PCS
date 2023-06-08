@@ -162,7 +162,7 @@ TEST(TestSorting, TestMergeSort)
 }
 
 
-TEST(TestProduct, TestcrossProduct)
+TEST(TestProduct, TestCrossProduct)
 {
     unsigned int id = 0;
     double c1 = 1.5;
@@ -179,6 +179,26 @@ TEST(TestProduct, TestcrossProduct)
     EXPECT_EQ(vero1, crossProduct(p3,p3));
     EXPECT_EQ(vero2, crossProduct(p3,p2));
     EXPECT_EQ(vero3, crossProduct(p3,p1));
+}
+
+TEST(TestClasseMesh, TestControlloDelaunay)
+{
+
+}
+
+TEST(TestClasseMesh, TestCollegaSenzaIntersezioni)
+{
+
+}
+
+TEST(TestClassMesh, TestAccettabile)
+{
+
+}
+
+TEST(TestClassMesh, TestCostruttore)
+{
+
 }
 
 
