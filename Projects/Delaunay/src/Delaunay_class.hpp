@@ -66,18 +66,19 @@ namespace ProjectLibrary
 
     class Lato
     {
-    friend class Triangolo;
-    friend class Mesh;
-    friend class IOMesh;
-    protected:
+    //friend class Triangolo;
+    //friend class Mesh;
+    //friend class IOMesh;
+    public:
+    //protected:
         unsigned int _id;
         Punto _p1;
         Punto _p2;
         double _length;
         vector<unsigned int> _listIdTr;
+    public:
         Lato* _prec = nullptr;
         Lato* _succ = nullptr;
-    public:
         Lato(unsigned int& id , const Punto& p1, const Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
         Lato(){}
@@ -109,7 +110,8 @@ namespace ProjectLibrary
     class Mesh
     {
     friend class IOMesh;
-    protected:
+    //protected:
+    public:
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;

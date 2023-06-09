@@ -9,6 +9,20 @@ using namespace testing;
 using namespace ProjectLibrary;
 using namespace SortLibrary;
 
+/*
+class LatoTest: public Lato{
+public:
+    LatoTest(){}
+    vector<unsigned int>& LIT(){return _listIdTr;}
+};
+
+class MeshTest: public Mesh{
+public:
+    MeshTest(){Mesh::Mesh();}
+    vector<unsigned int>& LT(){return _listaTriangoli;}
+};
+
+*/
 
 TEST(TestClassPunto, TestPuntoConstructor)
 {
@@ -183,6 +197,41 @@ TEST(TestProduct, TestCrossProduct)
 
 TEST(TestClasseMesh, TestControlloDelaunay)
 {
+    Mesh m = Mesh();
+    unsigned int id = 0;
+    unsigned int idp1 = 0;
+    unsigned int idp2 = idp1+1;
+    unsigned int idp3 = idp1+2;
+    unsigned int idp4 = idp1+3;
+    unsigned int idl1 = 0;
+    unsigned int idl2 = idl1+1;
+    unsigned int idl3 = idl1+2;
+    unsigned int idl4 = idl1+3;
+    unsigned int idl5 = idl1+4;
+    double c1 = 0;
+    double c2 = 1;
+    double c3 = -1;
+    Punto p1 = Punto(idp1,c1,c1);
+    Punto p2 = Punto(idp2,c2,c3);
+    Punto p3 = Punto(idp3,c1,c2);
+    Punto p4 = Punto(idp4,c2,c2);
+
+    Lato l1 = Lato(idl1, p1, p2, id);
+    Lato l2 = Lato(idl2, p2, p3, id);
+    Lato l3 = Lato(idl3, p3, p1, id);
+    Triangolo t1 = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
+    id++;
+    Lato l4 = Lato(idl4, p2, p4, id);
+    Lato l5 = Lato(idl5, p4, p3, id);
+    Triangolo t2 = Triangolo(id, idp2, idp4, idp3, idl4, idl5, idl2);
+    l2._listIdTr.push_back(id);
+    m._listaTriangoli = {t1, t2};
+    m._listaPunti = {p1, p2, p3, p4};
+    m._listaLati = {l1, l2, l3, l4, l5};
+    m._codaDelaunay.push_back({l2._id, 0});
+    m.ControlloDelaunay();
+    string vero = "";
+    EXPECT_EQ(m.Show(), vero);
 
 }
 

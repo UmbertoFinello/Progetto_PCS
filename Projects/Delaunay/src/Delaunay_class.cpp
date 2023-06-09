@@ -96,7 +96,7 @@ namespace ProjectLibrary
             if(abs(crossProduct(v2,v1))<Punto::geometricTol){
                 result[0]=2;
                 result[1]=(*pointer)._id;
-                return result
+                return result;
             }
             else if (crossProduct(v2,v1)>0){
                 result[0]=3;
@@ -172,8 +172,8 @@ namespace ProjectLibrary
             else{
                idCorr=l._listIdTr[0];
             }
-            return result;
         }
+        return result;
     }
 
     void Mesh::ControlloDelaunay()
@@ -234,17 +234,19 @@ namespace ProjectLibrary
                         if(latcom._p2 == _listaPunti[(_listaTriangoli[id_nt]._vertici)[i]])
                             nt_i[1] = i;
                     }
+                    Triangolo tr_v = _listaTriangoli[fc[1]];
+                    Triangolo tr_n = _listaTriangoli[id_nt];
                     for(unsigned int g = 0; g<2; g++){
-                        if (_listaPunti[(_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1]] != pv[g]){
-                            B = (_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1];
-                            l1 = (_listaTriangoli[fc[1]]._lati)[tv_i[g]];
-                            C = (_listaTriangoli[id_nt]._vertici)[nt_i[g]+1];
-                            l2 = (_listaTriangoli[id_nt]._lati)[nt_i[g]];
+                        if (_listaPunti[(tr_v._vertici)[tv_i[g]+1]] != pv[(g+1)]){
+                            B = (tr_v._vertici)[tv_i[g]+1];
+                            l1 = (tr_v._lati)[tv_i[g]];
+                            C = (tr_n._vertici)[nt_i[g]+1];
+                            l2 = (tr_n._lati)[nt_i[g]];
                         }else{
-                            B = (_listaTriangoli[id_nt]._vertici)[nt_i[g]+1];
-                            l1 = (_listaTriangoli[id_nt]._lati)[nt_i[g]];
-                            C = (_listaTriangoli[fc[1]]._vertici)[tv_i[g]+1];
-                            l2 = (_listaTriangoli[fc[1]]._lati)[tv_i[g]];
+                            B = (tr_n._vertici)[nt_i[g]+1];
+                            l1 = (tr_n._lati)[nt_i[g]];
+                            C = (tr_v._vertici)[tv_i[g]+1];
+                            l2 = (tr_v._lati)[tv_i[g]];
                         }
                         for(unsigned int z = 0; z<(_listaLati[l1]._listIdTr).size(); z++)
                             if ((_listaLati[l1]._listIdTr)[z] == ix[(g+1)%2])
@@ -743,23 +745,23 @@ namespace ProjectLibrary
     string Mesh::Show()
     {
         string result = "Punti\n";
-        result + "Id x y\n";
+        result = result  + "Id x y\n";
         for(unsigned int k = 0; k<_listaPunti.size(); k++){
-            result + _listaPunti[k].Show() + "\n";
+            result = result + _listaPunti[k].Show() + "\n";
         }
-        result + "Lati\n";
-        result + "Id p1 p2 TriangoliAdiacenti\n";
+        result = result + "Lati\n";
+        result = result + "Id p1 p2 Length TriangoliAdiacenti\n";
         for(unsigned int k = 0; k<_listaLati.size(); k++){
-            result + _listaLati[k].Show() + "\n";
+           result = result + _listaLati[k].Show() + "\n";
         }
-        result + "Triangoli\n";
-        result + "Id p1 p2 p3 l1 l2 l3\n";
+        result = result + "Triangoli\n";
+        result = result + "Id p1 p2 p3 l1 l2 l3\n";
         for(unsigned int k = 0; k<_listaTriangoli.size(); k++){
-            result + to_string(_listaTriangoli[k]._id) + " " + to_string((_listaTriangoli[k]._vertici)[0])
-                + " " + to_string((_listaTriangoli[k]._vertici)[1]) + " "
-                + to_string((_listaTriangoli[k]._vertici)[2]) + " "
-                + to_string((_listaTriangoli[k]._lati)[0]) + " " + to_string((_listaTriangoli[k]._lati)[1])
-                + " " + to_string((_listaTriangoli[k]._lati)[2]) + "\n";
+            result = result + to_string(_listaTriangoli[k]._id) + " " + to_string((_listaTriangoli[k]._vertici)[0])
+                    + " " + to_string((_listaTriangoli[k]._vertici)[1]) + " "
+                    + to_string((_listaTriangoli[k]._vertici)[2]) + " "
+                    + to_string((_listaTriangoli[k]._lati)[0]) + " " + to_string((_listaTriangoli[k]._lati)[1])
+                    + " " + to_string((_listaTriangoli[k]._lati)[2]) + "\n";
         }
         return result;
     }
