@@ -195,7 +195,7 @@ namespace ProjectLibrary
             Lato latcom = _listaLati[fc[0]]; //lato in comune
             pv[0] = latcom._p1;
             pv[1] = latcom._p2;
-            if(latcom._listIdTr.size() == 2){
+            //if(latcom._listIdTr.size() == 2){
                 double somang; //somma angoli
                 array<Punto, 2> vnl; //vertici nuovo lato
                 somang = _listaTriangoli[(latcom._listIdTr)[0]].CalcolaAngolo(latcom, _listaLati) +
@@ -207,7 +207,8 @@ namespace ProjectLibrary
                     }
                     ix[1] = id_nt;
                     for(unsigned int j = 0; j<3; j++){
-                        if ((_listaTriangoli[id_nt]._lati)[j] != fc[0])
+                        if ((_listaTriangoli[id_nt]._lati)[j] != fc[0] &&
+                            _listaLati[(_listaTriangoli[id_nt]._lati)[j]]._listIdTr.size() == 2)
                             nec = {(_listaTriangoli[id_nt]._lati)[j], id_nt};
                         _codaDelaunay.push_back(nec);
                     }
@@ -237,16 +238,16 @@ namespace ProjectLibrary
                     Triangolo tr_v = _listaTriangoli[fc[1]];
                     Triangolo tr_n = _listaTriangoli[id_nt];
                     for(unsigned int g = 0; g<2; g++){
-                        if (_listaPunti[(tr_v._vertici)[tv_i[g]+1]] != pv[(g+1)]){
-                            B = (tr_v._vertici)[tv_i[g]+1];
+                        if (_listaPunti[(tr_v._vertici)[(tv_i[g]+1)%3]] != pv[(g+1)%2]){
+                            B = (tr_v._vertici)[(tv_i[g]+1)%3];
                             l1 = (tr_v._lati)[tv_i[g]];
-                            C = (tr_n._vertici)[nt_i[g]+1];
-                            l2 = (tr_n._lati)[nt_i[g]];
+                            C = (tr_n._vertici)[(nt_i[(g+1)%2]+1)%3];
+                            l2 = (tr_n._lati)[(nt_i[(g+1)%2]+1)%3];
                         }else{
-                            B = (tr_n._vertici)[nt_i[g]+1];
+                            B = (tr_n._vertici)[(nt_i[g]+1)%3];
                             l1 = (tr_n._lati)[nt_i[g]];
-                            C = (tr_v._vertici)[tv_i[g]+1];
-                            l2 = (tr_v._lati)[tv_i[g]];
+                            C = (tr_v._vertici)[(tv_i[(g+1)%2]+1)%3];
+                            l2 = (tr_v._lati)[(tv_i[(g+1)%2]+1)%3];
                         }
                         for(unsigned int z = 0; z<(_listaLati[l1]._listIdTr).size(); z++)
                             if ((_listaLati[l1]._listIdTr)[z] == ix[(g+1)%2])
@@ -258,7 +259,7 @@ namespace ProjectLibrary
                         _listaTriangoli[ix[g]] = tn;
                     }
                 }
-            }
+            //}
             _codaDelaunay.pop_front();
         }
 	}

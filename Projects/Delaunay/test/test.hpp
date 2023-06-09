@@ -230,7 +230,10 @@ TEST(TestClasseMesh, TestControlloDelaunay)
     m._listaLati = {l1, l2, l3, l4, l5};
     m._codaDelaunay.push_back({l2._id, 0});
     m.ControlloDelaunay();
-    string vero = "";
+    string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 -1.000000\n2 0.000000 1.000000\n3 1.000000 "
+                  "1.000000\nLati\nId p1 p2 Length TriangoliAdiacenti\n0 0 1 1.414214 0\n1 0 3 1.414214 0,1\n2"
+                  " 2 0 1.000000 1\n3 1 3 2.000000 0\n4 3 2 1.000000 1\nTriangoli\nId p1 p2 p3 l1 l2 l3\n0 1 3"
+                  " 0 3 1 0\n1 2 0 3 2 1 4\n";
     EXPECT_EQ(m.Show(), vero);
 
 }
