@@ -487,7 +487,7 @@ namespace ProjectLibrary
         }
         Lato l;
         for(unsigned int i = 0; i<3; i++){
-            l = Lato(idlato,_listaPunti[i],_listaPunti[(i+1)%3], idtriang);
+            l = Lato(idlato, punti_scelti[i], punti_scelti[(i+1)%3], idtriang);
             _listaLati.push_back(l);
             idlato++;
         }
@@ -498,7 +498,7 @@ namespace ProjectLibrary
         _listaLati[0]._succ = &_listaLati[1];
         _listaLati[1]._succ = &_listaLati[2];
         _listaLati[2]._succ = &_listaLati[0];
-        Triangolo tr = Triangolo(idtriang, _listaPunti[0]._id ,_listaPunti[1]._id, _listaPunti[2]._id,
+        Triangolo tr = Triangolo(idtriang, punti_scelti[0]._id , punti_scelti[1]._id, punti_scelti[2]._id,
                                  _listaLati[0]._id, _listaLati[1]._id, _listaLati[2]._id);
         idtriang++;
         _listaTriangoli.push_back(tr);
