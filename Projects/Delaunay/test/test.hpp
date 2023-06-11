@@ -9,20 +9,61 @@ using namespace testing;
 using namespace ProjectLibrary;
 using namespace SortLibrary;
 
-/*
-class LatoTest: public Lato{
+class LatoTest : public Lato
+{
 public:
+    LatoTest(unsigned int& id, const Punto& p1, const Punto& p2, unsigned int& idtr):Lato(id, p1, p2, idtr){}
+    LatoTest(const LatoTest& lat):Lato(lat){}
     LatoTest(){}
+    Lato*& Prec(){return _prec;}
+    Lato*& Succ(){return _succ;}
     vector<unsigned int>& LIT(){return _listIdTr;}
+    double& LTH(){return _length;}
+    Punto& P2(){return _p2;}
+    Punto& P1(){return _p1;}
+    unsigned int& ID(){return _id;}
+    string Show(){return Lato::Show();}
+    LatoTest& operator=(const LatoTest& l) {_id = l._id; _p1 = l._p1; _p2 = l._p2; _length = l._length;
+        _listIdTr = l._listIdTr; _prec = l._prec; _succ = l._succ; return *this;
+    }
 };
 
-class MeshTest: public Mesh{
+class TriangoloTest: public Triangolo
+{
 public:
-    MeshTest(){Mesh::Mesh();}
-    vector<unsigned int>& LT(){return _listaTriangoli;}
+    TriangoloTest(unsigned int& ident, const unsigned int& p1, const unsigned int& p2, const unsigned int& p3,
+                  const unsigned int& l1, const unsigned int& l2, const unsigned int& l3):
+        Triangolo(ident, p1, p2, p3, l1, l2, l3){}
+    TriangoloTest(const TriangoloTest& triang):Triangolo(triang){}
+    TriangoloTest():Triangolo(){}
+    unsigned int& ID(){return _id;}
+    array<unsigned int, 3> VRT(){return _vertici;}
+    array<unsigned int, 3> LT(){return _lati;}
+    double CalcolaAngolo(const Lato& segm, vector<Lato>& lst_lat) {return Triangolo::CalcolaAngolo(segm, lst_lat);}
+    string Show(){return Triangolo::Show();}
+    TriangoloTest& operator=(const TriangoloTest& t) {_id = t._id; _vertici = t._vertici; _lati = t._lati;
+        return *this;
+    }
 };
 
-*/
+class MeshTest: public Mesh
+{
+public:
+    MeshTest(const vector<Punto>& listaPunti):Mesh(listaPunti){}
+    vector<Triangolo>& LTR(){return _listaTriangoli;}
+    vector<Lato>& LL(){return _listaLati;}
+    vector<Punto>& LP(){return _listaPunti;}
+    Lato*& HB(){return _hullBeginLato;}
+    list<array<unsigned int,2>>& CD(){return _codaDelaunay;}
+    MeshTest(){}
+    void ControlloDelaunay(){Mesh::ControlloDelaunay();}
+    array<unsigned int, 2> DentroMesh(const Punto& p) {return Mesh::DentroMesh(p);}
+    void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l){
+        Mesh::CollegaSenzaIntersezioni(p, id_t, id_l);
+    }
+    bool accettabile(const Punto& pnew, const Punto& v){return Mesh::accettabile(pnew,v);}
+    string Show(){return Mesh::Show();}
+};
 
 TEST(TestClassPunto, TestPuntoConstructor)
 {
@@ -144,7 +185,7 @@ TEST(TestClassTriangolo, TestCalcolangoli)
     vector<Lato> vlat = {l1, l2, l3};
     double right13 = M_PI/4;
     double right2 = M_PI/2;
-    Triangolo tr = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
+    TriangoloTest tr = TriangoloTest(id, idp1, idp2, idp3, idl1, idl2, idl3);
     double tol = Punto::geometricTol;
     EXPECT_LE(abs(tr.CalcolaAngolo(l1,vlat)-right13), tol);
     EXPECT_LE(abs(tr.CalcolaAngolo(l2,vlat)-right2), tol);
@@ -197,7 +238,7 @@ TEST(TestProduct, TestCrossProduct)
 
 TEST(TestClasseMesh, TestControlloDelaunay)
 {
-    Mesh m = Mesh();
+    MeshTest m = MeshTest();
     unsigned int id = 0;
     unsigned int idp1 = 0;
     unsigned int idp2 = idp1+1;
@@ -216,19 +257,19 @@ TEST(TestClasseMesh, TestControlloDelaunay)
     Punto p3 = Punto(idp3,c1,c2);
     Punto p4 = Punto(idp4,c2,c2);
 
-    Lato l1 = Lato(idl1, p1, p2, id);
-    Lato l2 = Lato(idl2, p2, p3, id);
-    Lato l3 = Lato(idl3, p3, p1, id);
+    LatoTest l1 = LatoTest(idl1, p1, p2, id);
+    LatoTest l2 = LatoTest(idl2, p2, p3, id);
+    LatoTest l3 = LatoTest(idl3, p3, p1, id);
     Triangolo t1 = Triangolo(id, idp1, idp2, idp3, idl1, idl2, idl3);
     id++;
-    Lato l4 = Lato(idl4, p2, p4, id);
-    Lato l5 = Lato(idl5, p4, p3, id);
+    LatoTest l4 = LatoTest(idl4, p2, p4, id);
+    LatoTest l5 = LatoTest(idl5, p4, p3, id);
     Triangolo t2 = Triangolo(id, idp2, idp4, idp3, idl4, idl5, idl2);
-    l2._listIdTr.push_back(id);
-    m._listaTriangoli = {t1, t2};
-    m._listaPunti = {p1, p2, p3, p4};
-    m._listaLati = {l1, l2, l3, l4, l5};
-    m._codaDelaunay.push_back({l2._id, 0});
+    l2.LIT().push_back(id);
+    m.LTR() = {t1, t2};
+    m.LP() = {p1, p2, p3, p4};
+    m.LL() = {l1, l2, l3, l4, l5};
+    m.CD().push_back({l2.ID(), 0});
     m.ControlloDelaunay();
     string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 -1.000000\n2 0.000000 1.000000\n3 1.000000 "
                   "1.000000\nLati\nId p1 p2 Length TriangoliAdiacenti\n0 0 1 1.414214 0\n1 0 3 1.414214 0,1\n2"
