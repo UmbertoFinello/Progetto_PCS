@@ -121,6 +121,9 @@ namespace ProjectLibrary
         void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l);
         bool accettabile(const Punto& pnew, const Punto& v);
         array<unsigned int, 2> DentroMesh(const Punto& p);
+        void PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt);
+        void PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
+        void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}

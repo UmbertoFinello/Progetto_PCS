@@ -424,6 +424,249 @@ namespace ProjectLibrary
         }
     }
 
+    void Mesh::PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt)
+    {
+        array<unsigned int, 2> il_it;
+        Triangolo tr =  _listaTriangoli[itr];
+        Lato l1 = Lato(id_lt, po, _listaLati[(tr._lati)[0]]._p1, itr);
+        unsigned int idl1 = id_lt;
+        _listaLati.push_back(l1);
+        id_lt++;
+
+        Lato l2 = Lato(id_lt, _listaLati[(tr._lati)[0]]._p2, po, itr);
+        unsigned int idl2 = id_lt;
+        _listaLati.push_back(l2);
+        id_lt++;
+
+        Triangolo tng = Triangolo(id_tr, po._id, (tr._vertici)[0], (tr._vertici)[1], idl1, (tr._lati)[0], idl2);
+        _listaTriangoli[id_tr] = tng;
+        if (_listaLati[(tr._lati)[0]]._listIdTr.size() == 2){
+            il_it = {(tr._lati)[0], tng._id};
+            _codaDelaunay.push_back(il_it);
+        }
+
+        Lato l3 = Lato(id_lt, _listaLati[(tr._lati)[1]]._p2, po, id_tr);
+        unsigned int idl3 = id_lt;
+        _listaLati.push_back(l3);
+        id_lt++;
+        (_listaLati[idl2]._listIdTr).push_back(id_tr);
+        for(unsigned int i = 0; i<2; i++){
+            if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == itr){
+                (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
+                break;
+            }
+        }
+        tng = Triangolo(id_tr, po._id, (tr._vertici)[1], (tr._vertici)[2], idl2, (tr._lati)[1], idl3);
+        id_tr++;
+        _listaTriangoli.push_back(tng);
+        if (_listaLati[(tr._lati)[1]]._listIdTr.size() == 2){
+            il_it = {(tr._lati)[1], tng._id};
+            _codaDelaunay.push_back(il_it);
+        }
+
+        (_listaLati[idl1]._listIdTr).push_back(id_tr);
+        (_listaLati[idl3]._listIdTr).push_back(id_tr);
+        tng = Triangolo(id_tr, po._id, (tr._vertici)[2], (tr._vertici)[0], idl3, (tr._lati)[2], idl1);
+        id_tr++;
+        _listaTriangoli.push_back(tng);
+        if (_listaLati[(tr._lati)[2]]._listIdTr.size() == 2){
+            il_it = {(tr._lati)[2], tng._id};
+            _codaDelaunay.push_back(il_it);
+        }
+        for(unsigned int i = 0; i<2; i++){
+            if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == itr){
+                (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
+                break;
+            }
+        }
+    }
+
+    void Mesh::PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt)
+    {
+        unsigned int itr;
+        unsigned int itx;
+        unsigned int cn = 1;
+        unsigned int lid;
+        Triangolo tr;
+        array<unsigned int, 2> il_it;
+        Triangolo tng;
+        Lato l1;
+        Lato l2;
+        Lato l3;
+        Lato l4;
+        bool a1;
+        bool a2;
+        for(unsigned int k = 0; k<_listaLati[ilt]._listIdTr.size(); k++){
+            itr = (_listaLati[ilt]._listIdTr)[k];
+            tr = _listaTriangoli[itr];
+            for(unsigned int h = 0; h<3; h++){
+                if (((po._x*_listaPunti[(tr._vertici)[h]]._y) + (po._y*_listaPunti[(tr._vertici)[(h+1)%3]]._x)
+                     + (_listaPunti[(tr._vertici)[h]]._x*_listaPunti[(tr._vertici)[(h+1)%3]]._y)
+                     - (_listaPunti[(tr._vertici)[(h+1)%3]]._x*_listaPunti[(tr._vertici)[h]]._y)
+                     - (_listaPunti[(tr._vertici)[(h+1)%3]]._y*po._x)
+                     - (_listaPunti[(tr._vertici)[h]]._x*po._y)) != 0)
+                {
+                    switch (cn){
+                    case 1:
+                        if (_listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p1 ||
+                            _listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p2){
+                            l1 = Lato(ilt, po, _listaPunti[(tr._vertici)[h]], itr);
+                            _listaLati[ilt] = l1;
+                            l2 = Lato(id_lt, _listaPunti[(tr._vertici)[(h+1)%3]], po, itr);
+                            _listaLati.push_back(l2);
+                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            ilt, (tr._lati)[h], id_lt);
+                            a1 = true;
+                        } else {
+                            l2 = Lato(ilt, po, _listaPunti[(tr._vertici)[h]], itr);
+                            _listaLati.push_back(l2);
+                            l1 = Lato(id_lt, _listaPunti[(tr._vertici)[(h+1)%3]], po, itr);
+                            _listaLati[ilt] = l1;
+                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            id_lt, (tr._lati)[h], ilt);
+                            a1 = false;
+                        }
+                        _listaTriangoli[itr] = tng;
+                        id_lt++;
+                        cn++;
+                        itx = itr;
+                        break;
+                    case 2:
+                        if(a1){
+                            l3 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[(h+1)%3]], id_tr);
+                            tng = Triangolo(id_tr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            l2._id, (tr._lati)[h], id_lt);
+                        } else {
+                            l3 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[h]], id_tr);
+                            tng = Triangolo(id_tr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            id_lt, (tr._lati)[h], l2._id);
+                        }
+                        _listaLati[l2._id]._listIdTr.push_back(id_tr);
+                        _listaLati.push_back(l3);
+                        _listaTriangoli.push_back(tng);
+                        itx = id_tr;
+                        id_lt++;
+                        id_tr++;
+                        cn++;
+                        break;
+                    case 3:
+                        if (_listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p1 ||
+                            _listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p2){
+                            l4 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[(h+1)%2]], itr);
+                            a2 = true;
+                            if(a1)
+                                lid = l3._id;
+                            else
+                                lid = l1._id;
+                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            lid, (tr._lati)[h], id_lt);
+                        } else {
+                            a2 = false;
+                            l4 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[h]], itr);
+                            if(a1)
+                                lid = l1._id;
+                            else
+                                lid = l3._id;
+                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            id_lt, (tr._lati)[h], lid);
+                        }
+                        _listaLati[lid]._listIdTr.push_back(itr);
+                        _listaLati.push_back(l4);
+                        _listaTriangoli[itr] = tng;
+                        id_lt++;
+                        cn++;
+                        itx = itr;
+                        break;
+                    case 4:
+                        if(a2){
+                            if(a1)
+                                lid = l1._id;
+                            else
+                                lid = l3._id;
+                            tng = Triangolo(id_tr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            l4._id, (tr._lati)[h], lid);
+                        } else {
+                            if(a1)
+                                lid = l3._id;
+                            else
+                                lid = l1._id;
+                            tng = Triangolo(id_tr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                            lid, (tr._lati)[h], l4._id);
+                        }
+                        _listaLati[lid]._listIdTr.push_back(id_tr);
+                        _listaLati[l4._id]._listIdTr.push_back(id_tr);
+                        _listaTriangoli.push_back(tng);
+                        itx = id_tr;
+                        id_tr++;
+                        break;
+                    }
+                    for (unsigned int j = 0; j< _listaLati[(tr._lati)[h]]._listIdTr.size(); j++){
+                        if ((_listaLati[(tr._lati)[h]]._listIdTr)[j] == itr)
+                            (_listaLati[(tr._lati)[h]]._listIdTr)[j] = itx;
+                    }
+                    if(_listaLati[(tr._lati)[h]]._listIdTr.size() == 2){
+                        il_it = {(tr._lati)[h], itx};
+                        _codaDelaunay.push_back(il_it);
+                    }
+                }
+            }
+        }
+    }
+
+    void Mesh::PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt)
+    {
+        Lato l = _listaLati[ilt];
+        array<unsigned int, 2> il_it;
+        bool cambio_inizio = false;
+        if((*_hullBeginLato)._id == ilt)
+            cambio_inizio =true;
+        unsigned int itr = (_listaLati[ilt]._listIdTr)[0];
+        unsigned int pos;
+        Triangolo tr = _listaTriangoli[itr];
+        unsigned int pnl;
+        for (unsigned h = 0; h<3; h++){
+            if(_listaPunti[(_listaTriangoli[itr]._vertici)[h]] != _listaLati[ilt]._p1 ||
+                _listaPunti[(_listaTriangoli[itr]._vertici)[h]] != _listaLati[ilt]._p2)
+            {
+                pnl = (_listaTriangoli[itr]._vertici)[h];
+                pos = h;
+            }
+        }
+        Lato l1 = Lato(ilt, _listaLati[ilt]._p1, po, itr);
+        _listaLati[ilt] = l1;
+        Lato l2 = Lato(id_lt, po, _listaPunti[pnl], itr);
+        _listaLati.push_back(l2);
+        Triangolo tng = Triangolo(itr, _listaLati[ilt]._p1._id, po._id, pnl, ilt, (tr._lati)[pos], id_lt);
+        _listaTriangoli[itr] = tng;
+        id_lt++;
+        if(_listaLati[(tr._lati)[pos]]._listIdTr.size() == 2){
+            il_it = {(tr._lati)[pos], itr};
+            _codaDelaunay.push_back(il_it);
+        }
+        Lato l3 = Lato(id_lt, po, _listaLati[ilt]._p1, id_tr);
+        _listaLati.push_back(l3);
+        tng = Triangolo(id_tr, po._id, _listaLati[ilt]._p2._id, pnl, id_lt, (tr._lati)[(pos+2)%3],
+                        l2._id);
+        (_listaLati[l2._id]._listIdTr).push_back(id_tr);
+        _listaTriangoli.push_back(tng);
+        for (unsigned int j = 0; j< _listaLati[(tr._lati)[pos-1]]._listIdTr.size(); j++){
+            if ((_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] == itr)
+                (_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] = id_tr;
+        }
+        if(_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr.size() == 2){
+            il_it = {(tr._lati)[(pos+2)%3], id_tr};
+            _codaDelaunay.push_back(il_it);
+        }
+        id_tr++;
+        id_lt++;
+        _listaLati[l1._id]._prec = l._prec;
+        _listaLati[l3._id]._prec = &_listaLati[l1._id];
+        _listaLati[l1._id]._succ = &_listaLati[l3._id];
+        _listaLati[l3._id]._succ = l._succ;
+        if(cambio_inizio)
+            _hullBeginLato = &_listaLati[l1._id];
+    }
+
     Mesh::Mesh(const vector<Punto>& listaPunti):
         _listaPunti(listaPunti)
     {
@@ -505,16 +748,8 @@ namespace ProjectLibrary
         idtriang++;
         _listaTriangoli.push_back(tr);
 
-        unsigned int idl1;
-        unsigned int idl2;
-        unsigned int idl3;
         Triangolo tng;
-        array<unsigned int, 2> il_it;
         array<unsigned int, 2> DM;
-        Lato l1;
-        Lato l2;
-        Lato l3;
-        Lato l4;
         Punto po;
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
             po = _listaPunti[i];
@@ -522,234 +757,15 @@ namespace ProjectLibrary
                 DM = this->DentroMesh(po);
                 switch (DM[0]) {
                 case 0: {//punto interno
-                    tr =  _listaTriangoli[DM[1]];
-                    l1 = Lato(idlato, po, _listaLati[(tr._lati)[0]]._p1, DM[1]);
-                    idl1 =idlato;
-                    _listaLati.push_back(l1);
-                    idlato++;
-
-                    l2 = Lato(idlato, _listaLati[(tr._lati)[0]]._p2, po, DM[1]);
-                    idl2 = idlato;
-                    _listaLati.push_back(l2);
-                    idlato++;
-
-                    tng = Triangolo(DM[1], po._id, (tr._vertici)[0], (tr._vertici)[1], idl1, (tr._lati)[0], idl2);
-                    _listaTriangoli[DM[1]] = tng;
-                    if (_listaLati[(tr._lati)[0]]._listIdTr.size() == 2){
-                        il_it = {(tr._lati)[0], tng._id};
-                        _codaDelaunay.push_back(il_it);
-                    }
-
-                    l3 = Lato(idlato, _listaLati[(tr._lati)[1]]._p2, po, idtriang);
-                    idl3 = idlato;
-                    _listaLati.push_back(l3);
-                    idlato++;
-                    (_listaLati[idl2]._listIdTr).push_back(idtriang);
-                    for(unsigned int i = 0; i<2; i++){
-                        if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == DM[1]){
-                            (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
-                            break;
-                        }
-                    }
-                    tng = Triangolo(idtriang, po._id, (tr._vertici)[1], (tr._vertici)[2], idl2, (tr._lati)[1], idl3);
-                    idtriang++;
-                    _listaTriangoli.push_back(tng);
-                    if (_listaLati[(tr._lati)[1]]._listIdTr.size() == 2){
-                        il_it = {(tr._lati)[1], tng._id};
-                        _codaDelaunay.push_back(il_it);
-                    }
-
-                    (_listaLati[idl1]._listIdTr).push_back(idtriang);
-                    (_listaLati[idl3]._listIdTr).push_back(idtriang);
-                    tng = Triangolo(idtriang, po._id, (tr._vertici)[2], (tr._vertici)[0], idl3, (tr._lati)[2], idl1);
-                    idtriang++;                    
-                    _listaTriangoli.push_back(tng);
-                    if (_listaLati[(tr._lati)[2]]._listIdTr.size() == 2){
-                    il_it = {(tr._lati)[2], tng._id};
-                    _codaDelaunay.push_back(il_it);
-                    }
-                    for(unsigned int i = 0; i<2; i++){
-                        if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == DM[1]){
-                            (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
-                            break;
-                        }
-                    }
+                    this->PuntoInterno(po, DM[1], idtriang, idlato);
                     break;
                 }
                 case 1: {//sul bordo del triangolo
-                    unsigned int idtr;
-                    unsigned int itx;
-                    unsigned int cn = 1;
-                    unsigned int lid;
-                    bool a1;
-                    bool a2;
-                    for(unsigned int k = 0; k<_listaLati[DM[1]]._listIdTr.size(); k++){
-                        idtr = (_listaLati[DM[1]]._listIdTr)[k];
-                        tr = _listaTriangoli[idtr];
-                        for(unsigned int h = 0; h<3; h++){
-                            if (((po._x*_listaPunti[(tr._vertici)[h]]._y) + (po._y*_listaPunti[(tr._vertici)[(h+1)%3]]._x)
-                                 + (_listaPunti[(tr._vertici)[h]]._x*_listaPunti[(tr._vertici)[(h+1)%3]]._y)
-                                 - (_listaPunti[(tr._vertici)[(h+1)%3]]._x*_listaPunti[(tr._vertici)[h]]._y)
-                                 - (_listaPunti[(tr._vertici)[(h+1)%3]]._y*po._x)
-                                 - (_listaPunti[(tr._vertici)[h]]._x*po._y)) != 0)
-                            {
-                                switch (cn){
-                                case 1:
-                                    if (_listaPunti[(tr._vertici)[h]] == _listaLati[DM[1]]._p1 ||
-                                        _listaPunti[(tr._vertici)[h]] == _listaLati[DM[1]]._p2){
-                                            l1 = Lato(DM[1], po, _listaPunti[(tr._vertici)[h]], idtr);
-                                            _listaLati[DM[1]] = l1;
-                                            l2 = Lato(idlato, _listaPunti[(tr._vertici)[(h+1)%3]], po, idtr);
-                                            _listaLati.push_back(l2);
-                                            tng = Triangolo(idtr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                            DM[1], (tr._lati)[h], idlato);
-                                            a1 = true;
-                                    } else {
-                                            l2 = Lato(DM[1], po, _listaPunti[(tr._vertici)[h]], idtr);
-                                            _listaLati.push_back(l2);
-                                            l1 = Lato(idlato, _listaPunti[(tr._vertici)[(h+1)%3]], po, idtr);
-                                            _listaLati[DM[1]] = l1;
-                                            tng = Triangolo(idtr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                            idlato, (tr._lati)[h], DM[1]);
-                                            a1 = false;
-                                    }
-                                    _listaTriangoli[idtr] = tng;
-                                    idlato++;
-                                    cn++;
-                                    itx = idtr;
-                                    break;
-                                case 2:
-                                    if(a1){
-                                        l3 = Lato(idlato, po,  _listaPunti[(tr._vertici)[(h+1)%3]], idtriang);
-                                        tng = Triangolo(idtriang, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        l2._id, (tr._lati)[h], idlato);
-                                    } else {
-                                        l3 = Lato(idlato, po,  _listaPunti[(tr._vertici)[h]], idtriang);
-                                        tng = Triangolo(idtriang, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        idlato, (tr._lati)[h], l2._id);
-                                    }
-                                    _listaLati[l2._id]._listIdTr.push_back(idtriang);
-                                    _listaLati.push_back(l3);
-                                    _listaTriangoli.push_back(tng);
-                                    itx = idtriang;
-                                    idlato++;
-                                    idtriang++;
-                                    cn++;
-                                    break;
-                                case 3:
-                                    if (_listaPunti[(tr._vertici)[h]] == _listaLati[DM[1]]._p1 ||
-                                        _listaPunti[(tr._vertici)[h]] == _listaLati[DM[1]]._p2){
-                                        l4 = Lato(idlato, po,  _listaPunti[(tr._vertici)[(h+1)%2]], idtr);
-                                        a2 = true;
-                                        if(a1)
-                                            lid = l3._id;
-                                        else
-                                            lid = l1._id;
-                                        tng = Triangolo(idtr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        lid, (tr._lati)[h], idlato);
-                                    } else {
-                                        a2 = false;
-                                        l4 = Lato(idlato, po,  _listaPunti[(tr._vertici)[h]], idtr);
-                                        if(a1)
-                                            lid = l1._id;
-                                        else
-                                            lid = l3._id;
-                                        tng = Triangolo(idtr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        idlato, (tr._lati)[h], lid);
-                                    }
-                                    _listaLati[lid]._listIdTr.push_back(idtr);
-                                    _listaLati.push_back(l4);
-                                    _listaTriangoli[idtr] = tng;
-                                    idlato++;
-                                    cn++;
-                                    itx = idtr;
-                                    break;
-                                case 4:
-                                    if(a2){
-                                        if(a1)
-                                            lid = l1._id;
-                                        else
-                                            lid = l3._id;
-                                        tng = Triangolo(idtriang, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        l4._id, (tr._lati)[h], lid);
-                                    } else {
-                                        if(a1)
-                                            lid = l3._id;
-                                        else
-                                            lid = l1._id;
-                                        tng = Triangolo(idtriang, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                                        lid, (tr._lati)[h], l4._id);
-                                    }
-                                    _listaLati[lid]._listIdTr.push_back(idtriang);
-                                    _listaLati[l4._id]._listIdTr.push_back(idtriang);
-                                    _listaTriangoli.push_back(tng);
-                                    itx = idtriang;
-                                    idtriang++;
-                                    break;
-                                }
-                                for (unsigned int j = 0; j< _listaLati[(tr._lati)[h]]._listIdTr.size(); j++){
-                                    if ((_listaLati[(tr._lati)[h]]._listIdTr)[j] == idtr)
-                                        (_listaLati[(tr._lati)[h]]._listIdTr)[j] = itx;
-                                }
-                                if(_listaLati[(tr._lati)[h]]._listIdTr.size() == 2){
-                                    il_it = {(tr._lati)[h], itx};
-                                    _codaDelaunay.push_back(il_it);
-                                }
-                            }
-                        }
-                    }
+                    this->PuntoBordoTriang(po, DM[1], idtriang, idlato);
                     break;
                 }
                 case 2: { //bordo hull
-                    Lato l = _listaLati[DM[1]];
-                    bool cambio_inizio = false;
-                    if((*_hullBeginLato)._id == DM[1])
-                        cambio_inizio =true;
-                    unsigned int idtr = (_listaLati[DM[1]]._listIdTr)[0];
-                    unsigned int pos;
-                    tr = _listaTriangoli[idtr];
-                    unsigned int pnl;
-                    for (unsigned h = 0; h<3; h++){
-                        if(_listaPunti[(_listaTriangoli[idtr]._vertici)[h]] != _listaLati[DM[1]]._p1 ||
-                           _listaPunti[(_listaTriangoli[idtr]._vertici)[h]] != _listaLati[DM[1]]._p2)
-                        {
-                            pnl = (_listaTriangoli[idtr]._vertici)[h];
-                            pos = h;
-                        }
-                    }
-                    l1 = Lato(DM[1], _listaLati[DM[1]]._p1, po, idtr);
-                    _listaLati[DM[1]] = l1;
-                    l2 = Lato(idlato, po, _listaPunti[pnl], idtr);
-                    _listaLati.push_back(l2);
-                    tng = Triangolo(idtr, _listaLati[DM[1]]._p1._id, po._id, pnl, DM[1], (tr._lati)[pos], idlato);
-                    _listaTriangoli[idtr] = tng;
-                    idlato++;
-                    if(_listaLati[(tr._lati)[pos]]._listIdTr.size() == 2){
-                        il_it = {(tr._lati)[pos], idtr};
-                        _codaDelaunay.push_back(il_it);
-                    }
-                    l3 = Lato(idlato, po, _listaLati[DM[1]]._p1, idtriang);
-                    _listaLati.push_back(l3);
-                    tng = Triangolo(idtriang, po._id, _listaLati[DM[1]]._p2._id, pnl, idlato, (tr._lati)[(pos+2)%3],
-                                    l2._id);
-                    (_listaLati[l2._id]._listIdTr).push_back(idtriang);
-                    _listaTriangoli.push_back(tng);                    
-                    for (unsigned int j = 0; j< _listaLati[(tr._lati)[pos-1]]._listIdTr.size(); j++){
-                        if ((_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] == idtr)
-                            (_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] = idtriang;
-                    }
-                    if(_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr.size() == 2){
-                        il_it = {(tr._lati)[(pos+2)%3], idtriang};
-                        _codaDelaunay.push_back(il_it);
-                    }
-                    idtriang++;
-                    idlato++;
-                    _listaLati[l1._id]._prec = l._prec;
-                    _listaLati[l3._id]._prec = &_listaLati[l1._id];
-                    _listaLati[l1._id]._succ = &_listaLati[l3._id];
-                    _listaLati[l3._id]._succ = l._succ;
-                    if(cambio_inizio)
-                        _hullBeginLato = &_listaLati[l1._id];
+                    this->PuntoBordoHull(po, DM[1], idtriang, idlato);
                     break;
                 }
 

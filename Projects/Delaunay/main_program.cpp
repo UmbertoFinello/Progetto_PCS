@@ -6,7 +6,7 @@ int main()
 {
     IOMesh IO = IOMesh();
     vector<Punto> List_punti;
-    string inputfile = "C:/Users/famiglia/Desktop/Progetto_PCS/Projects/Delaunay/Dataset/Test1.csv";
+    string inputfile = "./Dataset/Test1.csv";
     if(!(IO.ImportPunti(List_punti, inputfile)))
         return -1;
     else{
