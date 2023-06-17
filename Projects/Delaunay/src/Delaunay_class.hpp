@@ -41,7 +41,8 @@ namespace ProjectLibrary
             return Punto(id, x, y);
         }
 
-        inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; return *this;}
+        inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; _inserito = p._inserito;
+            return *this;}
     };
 
     inline double normSquared(const double& x, const double& y)
@@ -76,8 +77,8 @@ namespace ProjectLibrary
         Punto _p2;
         double _length;
         vector<unsigned int> _listIdTr;
-        Lato* _prec = nullptr;
-        Lato* _succ = nullptr;
+        unsigned int _prec = 0;
+        unsigned int _succ = 0;
     public:
         Lato(unsigned int& id , const Punto& p1, const Punto& p2, unsigned int& idtr);
         Lato(const Lato& lat);
@@ -114,7 +115,7 @@ namespace ProjectLibrary
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
         vector<Punto> _listaPunti;
-        Lato* _hullBeginLato;
+        unsigned int _hullBeginLato = 0;
         list<array<unsigned int,2>> _codaDelaunay;
     protected:
         void ControlloDelaunay();
@@ -135,7 +136,7 @@ namespace ProjectLibrary
         public:
             IOMesh(){}
             bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
-            bool ExportMesh(const Mesh& mesh, const string& OutFilePath);
+            bool ExportMesh(const Mesh& mesh, const string& OutFilePath, const string& OutFileNameParz);
     };
 }
 

@@ -15,8 +15,8 @@ public:
     LatoTest(unsigned int& id, const Punto& p1, const Punto& p2, unsigned int& idtr):Lato(id, p1, p2, idtr){}
     LatoTest(const LatoTest& lat):Lato(lat){}
     LatoTest(){}
-    Lato*& Prec(){return _prec;}
-    Lato*& Succ(){return _succ;}
+    unsigned int& Prec(){return _prec;}
+    unsigned int& Succ(){return _succ;}
     vector<unsigned int>& LIT(){return _listIdTr;}
     double& LTH(){return _length;}
     Punto& P2(){return _p2;}
@@ -53,7 +53,7 @@ public:
     vector<Triangolo>& LTR(){return _listaTriangoli;}
     vector<Lato>& LL(){return _listaLati;}
     vector<Punto>& LP(){return _listaPunti;}
-    Lato*& HB(){return _hullBeginLato;}
+    unsigned int& HB(){return _hullBeginLato;}
     list<array<unsigned int,2>>& CD(){return _codaDelaunay;}
     MeshTest(){}
     void ControlloDelaunay(){Mesh::ControlloDelaunay();}

@@ -8,7 +8,7 @@ namespace ProjectLibrary
     {}
 
     Punto::Punto(const Punto& p):
-        _id(p._id), _x(p._x), _y(p._y)
+        _id(p._id), _x(p._x), _y(p._y), _inserito(p._inserito)
     {}
 
     string Punto::Show(){
@@ -87,28 +87,28 @@ namespace ProjectLibrary
         // 2:bordo hull     3:esterno
         array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
         // ricerca esterno/interno
-        Lato* pointer = _hullBeginLato;
+        unsigned int pointer = _hullBeginLato;
         bool inizio = true; // variabile per non uscire alla prima iteraz.
-        Punto v1 = (*pointer)._p2 - (*pointer)._p1;
-        Punto v2 = p - (*pointer)._p1;
+        Punto v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
+        Punto v2 = p - _listaLati[pointer]._p1;
         while((pointer != _hullBeginLato) || inizio){
             inizio=false;
             if(abs(crossProduct(v2,v1))<Punto::geometricTol){
-                result[0]=2;
-                result[1]=(*pointer)._id;
+                result[0]= 2;
+                result[1]= pointer;
                 return result;
             }
             else if (crossProduct(v2,v1)>0){
                 result[0]=3;
                 return result;
             }
-            pointer = (*pointer)._succ;
+            pointer = _listaLati[pointer]._succ;
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
         bool ext = true; // true: punto fuori triangolo
-        Lato l = (*_hullBeginLato);
-        unsigned int idCorr=l._listIdTr[0]; // id triangolo vecchio per ricerca
+        Lato l = _listaLati[_hullBeginLato];
+        unsigned int idCorr = l._listIdTr[0]; // id triangolo vecchio per ricerca
         while(ext)
         {
             // punti del triangolo
@@ -268,16 +268,16 @@ namespace ProjectLibrary
     {
         unsigned int counter = 0;
         bool result = true;
-        Lato* lato = _hullBeginLato;
+        unsigned int ilato = _hullBeginLato;
         bool inizio = true;
         Punto dir1 = pnew - point;
         unsigned int iv = 0;
         double x_pt;
         double y_pt;
-        while((_hullBeginLato != lato) || (inizio==true))
+        while((_hullBeginLato != ilato) || inizio)
         {
             // ricontrollare per l'antisimmetria del prodotto scalare
-            Punto dir2 = (*lato)._p2 - (*lato)._p1;
+            Punto dir2 = _listaLati[ilato]._p2 - _listaLati[ilato]._p1;
             if(abs(crossProduct(dir1,dir2)) < Punto::geometricTol) // da rivedere, tolleranza è dei punti, andrà bene uguale?
             {
                 // non mi interessa l'id
@@ -286,14 +286,14 @@ namespace ProjectLibrary
                 y_pt = (( (point)._y - pnew._y)*dir1._x-((point)._x - pnew._x)*dir1._y)/crossProduct(dir1,dir2);
                 Punto pt = Punto(iv, x_pt, y_pt);
 
-                if( (pt._x >= min(((*lato)._p1)._x,((*lato)._p2)._x)) &&
-                    (pt._x <= max(((*lato)._p1)._x,((*lato)._p2)._x)) &&
-                    (pt._y >= min(((*lato)._p1)._y,((*lato)._p2)._y)) &&
-                    (pt._y <= max(((*lato)._p1)._y,((*lato)._p2)._y)) &&
+                if( (pt._x >= min((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x)) &&
+                    (pt._x <= max((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x)) &&
+                    (pt._y >= min((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y)) &&
+                    (pt._y <= max((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y)) &&
                     (pt._x >= min(pnew._x,(point)._x)) && (pt._x <= max(pnew._x,(point)._x)) &&
                     (pt._y >= min(pnew._y,(point)._y)) && (pt._y <= max(pnew._y,(point)._y)) )
                 {
-                    if(pt == (*lato)._p1 || pt == (*lato)._p2)
+                    if(pt == _listaLati[ilato]._p1 || pt == _listaLati[ilato]._p2)
                     {
                         counter = counter + 1;
                         if (counter >2)
@@ -309,7 +309,7 @@ namespace ProjectLibrary
                     }
                 }
             }
-            lato = (*lato)._succ;
+            ilato = _listaLati[ilato]._succ;
         }
         return result;
     }
@@ -317,32 +317,32 @@ namespace ProjectLibrary
     void Mesh::CollegaSenzaIntersezioni(const Punto& pnew, unsigned int& id_t, unsigned int& id_l)
     {
         // trovo il primo e l'ultimo lato utile
-        Lato* fineLato = _hullBeginLato;
-        Lato* inizioLato = (*_hullBeginLato)._prec;
+        unsigned int fineLato = _hullBeginLato;
+        unsigned int inizioLato = _listaLati[_hullBeginLato]._prec;
         bool cambiaInizio = false;
         bool b = true; // variabile booleana di comodo
         unsigned int varaus;
         Punto paus;
-        if(accettabile(pnew,(*fineLato)._p1))
+        if(accettabile(pnew, _listaLati[fineLato]._p1))
         {
             while(b)
             {
-                fineLato = (*fineLato)._succ;
-                b = accettabile(pnew,(*fineLato)._p1);
+                fineLato = _listaLati[fineLato]._succ;
+                b = accettabile(pnew,_listaLati[fineLato]._p1);
             }
             // in v abbiamo l'utimo false, il prec del puntato di finePunto sarà l'ultimo accettabile
-            fineLato = (*fineLato)._prec;
-            if(accettabile(pnew,(*fineLato)._p1))
+            fineLato = _listaLati[fineLato]._prec;
+            if(accettabile(pnew,_listaLati[fineLato]._p1))
             {
                 cambiaInizio = true;
                 b = true;
                 while(b)
                 {
-                    inizioLato = (*inizioLato)._prec;
-                    b = accettabile(pnew,(*inizioLato)._p1);
+                    inizioLato = _listaLati[inizioLato]._prec;
+                    b = accettabile(pnew, _listaLati[inizioLato]._p1);
                 }
                 // in q abbiamo il primo false, il succ del puntato di q sarà il primo accettabile
-                inizioLato = (*inizioLato)._succ;
+                inizioLato = _listaLati[inizioLato]._succ;
             }
             else
             {
@@ -354,39 +354,39 @@ namespace ProjectLibrary
             // il controllo sopra lo faccio su v, se è falso metto comunque in q
             // quello che io misuro come il primo vero, quindi passo a v e modifico
             // opportunamente q, rifaccio iol ciclo
-            inizioLato = (*_hullBeginLato)._succ;
-            b = accettabile(pnew,(*inizioLato)._p1);
+            inizioLato = _listaLati[_hullBeginLato]._succ;
+            b = accettabile(pnew, _listaLati[inizioLato]._p1);
             while(!b)
             {
-                inizioLato = (*inizioLato)._succ;
-                b = accettabile(pnew,(*inizioLato)._p1);
+                inizioLato = _listaLati[inizioLato]._succ;
+                b = accettabile(pnew,_listaLati[inizioLato]._p1);
             }
             // q a questo punto avrà il primo accettabile
-            fineLato = (*inizioLato)._succ;
-            b = accettabile(pnew,(*fineLato)._p1);
+            fineLato = _listaLati[inizioLato]._succ;
+            b = accettabile(pnew, _listaLati[fineLato]._p1);
             while(b)
             {
-                fineLato = (*fineLato)._succ;
-                b = accettabile(pnew,(*fineLato)._p1);
+                fineLato = _listaLati[fineLato]._succ;
+                b = accettabile(pnew, _listaLati[fineLato]._p1);
             }
             // in v ho il falso, lo riposto all'ultimo vero
-            fineLato = (*fineLato)._prec;
+            fineLato = _listaLati[fineLato]._prec;
         }
 
         //creo tutti i lati utili
         vector<Lato> newLati;
-        Lato* copiaLato = inizioLato;
+        unsigned int copiaLato = inizioLato;
         Lato l;
         // id_t lo modificheremo quando creeremo i triangoli, per ora gli passo
         // fittiziamente solo una variabile che incremento di volta in volta
         unsigned int conta = 0;
-        while(copiaLato == (*fineLato)._succ)
+        while(copiaLato == _listaLati[fineLato]._succ)
         {
             varaus = id_t + conta;
-            paus = (*copiaLato)._p1;
+            paus = _listaLati[copiaLato]._p1;
             l = Lato(id_l, paus, pnew, varaus);
 
-            if((copiaLato == inizioLato)||((*copiaLato)._succ == fineLato)){
+            if((copiaLato == inizioLato)||(_listaLati[copiaLato]._succ == fineLato)){
                 conta++;
             }else{
                 conta++;
@@ -403,21 +403,22 @@ namespace ProjectLibrary
         unsigned int i = 0;
         Triangolo t;
         array<unsigned int, 2> lac; //lati da aggiungere a coda di Delaunay
-        while(copiaLato == (*fineLato)._succ)
+        while(copiaLato == _listaLati[fineLato]._succ)
         {
-            lac = {(*copiaLato)._id, id_t};
+            lac = {_listaLati[copiaLato]._id, id_t};
             _codaDelaunay.push_back(lac);
-            t = Triangolo(id_t,(*copiaLato)._id,pnew._id,((*copiaLato)._succ)->_id, newLati[i]._id,newLati[i+1]._id,(*copiaLato)._id);
-            copiaLato = (*copiaLato)._succ;
+            t = Triangolo(id_t, _listaLati[copiaLato]._id, pnew._id, _listaLati[copiaLato]._succ,
+                          newLati[i]._id, newLati[i+1]._id, copiaLato);
+            copiaLato = _listaLati[copiaLato]._succ;
             _listaTriangoli.push_back(t);
             i++;
             id_t++;
         }
         // aggiornamento HullLato
-        _listaLati[newLati[0]._id]._succ = &_listaLati[(newLati[newLati.size()-1])._id];
-        _listaLati[(newLati[newLati.size()-1])._id]._prec = &_listaLati[newLati[0]._id];
-        (*inizioLato)._succ = &_listaLati[newLati[0]._id];
-        (*fineLato)._prec = &_listaLati[(newLati[newLati.size()-1])._id];
+        _listaLati[newLati[0]._id]._succ = (newLati[newLati.size()-1])._id;
+        _listaLati[(newLati[newLati.size()-1])._id]._prec = newLati[0]._id;
+        _listaLati[inizioLato]._succ = newLati[0]._id;
+        _listaLati[fineLato]._prec = (newLati[newLati.size()-1])._id;
         // cambia inizio dell'Hull se serve
         if (cambiaInizio) {
             _hullBeginLato= inizioLato;
@@ -438,8 +439,8 @@ namespace ProjectLibrary
         _listaLati.push_back(l2);
         id_lt++;
 
-        Triangolo tng = Triangolo(id_tr, po._id, (tr._vertici)[0], (tr._vertici)[1], idl1, (tr._lati)[0], idl2);
-        _listaTriangoli[id_tr] = tng;
+        Triangolo tng = Triangolo(itr, po._id, (tr._vertici)[0], (tr._vertici)[1], idl1, (tr._lati)[0], idl2);
+        _listaTriangoli[itr] = tng;
         if (_listaLati[(tr._lati)[0]]._listIdTr.size() == 2){
             il_it = {(tr._lati)[0], tng._id};
             _codaDelaunay.push_back(il_it);
@@ -618,7 +619,7 @@ namespace ProjectLibrary
         Lato l = _listaLati[ilt];
         array<unsigned int, 2> il_it;
         bool cambio_inizio = false;
-        if((*_hullBeginLato)._id == ilt)
+        if(_hullBeginLato == ilt)
             cambio_inizio =true;
         unsigned int itr = (_listaLati[ilt]._listIdTr)[0];
         unsigned int pos;
@@ -660,11 +661,11 @@ namespace ProjectLibrary
         id_tr++;
         id_lt++;
         _listaLati[l1._id]._prec = l._prec;
-        _listaLati[l3._id]._prec = &_listaLati[l1._id];
-        _listaLati[l1._id]._succ = &_listaLati[l3._id];
+        _listaLati[l3._id]._prec = l1._id;
+        _listaLati[l1._id]._succ = l3._id;
         _listaLati[l3._id]._succ = l._succ;
         if(cambio_inizio)
-            _hullBeginLato = &_listaLati[l1._id];
+            _hullBeginLato = l1._id;
     }
 
     Mesh::Mesh(const vector<Punto>& listaPunti):
@@ -736,13 +737,12 @@ namespace ProjectLibrary
             _listaLati.push_back(l);
             idlato++;
         }
-        _hullBeginLato = &_listaLati[0];
-        _listaLati[0]._prec = &_listaLati[2];
-        _listaLati[1]._prec = &_listaLati[0];
-        _listaLati[2]._prec = &_listaLati[1];
-        _listaLati[0]._succ = &_listaLati[1];
-        _listaLati[1]._succ = &_listaLati[2];
-        _listaLati[2]._succ = &_listaLati[0];
+        _listaLati[0]._prec = 2;
+        _listaLati[1]._prec = 0;
+        _listaLati[2]._prec = 1;
+        _listaLati[0]._succ = 1;
+        _listaLati[1]._succ = 2;
+        _listaLati[2]._succ = 0;
         Triangolo tr = Triangolo(idtriang, punti_scelti[0]._id , punti_scelti[1]._id, punti_scelti[2]._id,
                                  _listaLati[0]._id, _listaLati[1]._id, _listaLati[2]._id);
         idtriang++;
@@ -750,14 +750,15 @@ namespace ProjectLibrary
 
         Triangolo tng;
         array<unsigned int, 2> DM;
-        Punto po;
+        Punto po;        
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
             po = _listaPunti[i];
             if (!(po._inserito)){
                 DM = this->DentroMesh(po);
+
                 switch (DM[0]) {
                 case 0: {//punto interno
-                    this->PuntoInterno(po, DM[1], idtriang, idlato);
+                    this->PuntoInterno(po, DM[1], idtriang, idlato);                    
                     break;
                 }
                 case 1: {//sul bordo del triangolo
@@ -778,6 +779,7 @@ namespace ProjectLibrary
                     this->ControlloDelaunay();
             }
         }
+        cout<<"Mesh Costruita"<<endl;
     }
 
     string Mesh::Show()
@@ -829,14 +831,14 @@ namespace ProjectLibrary
             Punto p = Punto(id,x,y);
             listaPunti.push_back(p);
         }
-
+        cout<<"Punti Importati"<<endl;
         return true;
     }
 
-    bool IOMesh::ExportMesh(const Mesh& mesh , const string& OutFilePath)
+    bool IOMesh::ExportMesh(const Mesh& mesh , const string& OutFilePath, const string& OutFileNameParz)
     {
         ofstream file;
-        file.open(OutFilePath + "Lati_Mesh.csv");
+        file.open(OutFilePath + "Lati_Mesh_" + OutFileNameParz);
         if (file.fail())
             return false;
 
@@ -849,7 +851,7 @@ namespace ProjectLibrary
         file.close();
 
         // dubbio, posso "sovrascrivere" sull'oggetto ofstream ?
-        file.open(OutFilePath + "Triangoli_Mesh.csv");
+        file.open(OutFilePath + "Triangoli_Mesh_" + OutFileNameParz);
         if (file.fail())
             return false;
 
@@ -871,6 +873,7 @@ namespace ProjectLibrary
             }
         }
         file.close();
+        cout<<"Mesh Esportata"<<endl;
         return true;
     }
 }
