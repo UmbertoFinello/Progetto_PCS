@@ -748,32 +748,30 @@ namespace ProjectLibrary
         idtriang++;
         _listaTriangoli.push_back(tr);
 
-        Triangolo tng;
         array<unsigned int, 2> DM;
         Punto po;        
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
             po = _listaPunti[i];
             if (!(po._inserito)){
                 DM = this->DentroMesh(po);
-
                 switch (DM[0]) {
-                case 0: {//punto interno
-                    this->PuntoInterno(po, DM[1], idtriang, idlato);                    
-                    break;
-                }
-                case 1: {//sul bordo del triangolo
-                    this->PuntoBordoTriang(po, DM[1], idtriang, idlato);
-                    break;
-                }
-                case 2: { //bordo hull
-                    this->PuntoBordoHull(po, DM[1], idtriang, idlato);
-                    break;
-                }
+                    case 0: {//punto interno
+                        this->PuntoInterno(po, DM[1], idtriang, idlato);
+                        break;
+                    }
+                    case 1: {//sul bordo del triangolo
+                        this->PuntoBordoTriang(po, DM[1], idtriang, idlato);
+                        break;
+                    }
+                    case 2: { //bordo hull
+                        this->PuntoBordoHull(po, DM[1], idtriang, idlato);
+                        break;
+                    }
 
-                case 4: {//esterno
-                    this->CollegaSenzaIntersezioni(po, idtriang, idlato);
-                    break;
-                }
+                    case 3: {//esterno
+                        this->CollegaSenzaIntersezioni(po, idtriang, idlato);
+                        break;
+                    }
                 }
                 if(!(_codaDelaunay.empty()))
                     this->ControlloDelaunay();
