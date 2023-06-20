@@ -200,7 +200,7 @@ namespace ProjectLibrary
             array<Punto, 2> vnl; //vertici nuovo lato
             somang = _listaTriangoli[(latcom._listIdTr)[0]].CalcolaAngolo(latcom, _listaLati) +
                      _listaTriangoli[(latcom._listIdTr)[1]].CalcolaAngolo(latcom, _listaLati);
-            if (somang > M_PI){
+            if ((somang-M_PI)> Punto::geometricTol){
                 for(unsigned int k = 0; k<2; k++){
                     if (latcom._listIdTr[k] != fc[1])
                         id_nt = latcom._listIdTr[k];
@@ -451,13 +451,13 @@ namespace ProjectLibrary
         _listaLati.push_back(l3);
         id_lt++;
         (_listaLati[idl2]._listIdTr).push_back(id_tr);
+        tng = Triangolo(id_tr, po._id, (tr._vertici)[1], (tr._vertici)[2], idl2, (tr._lati)[1], idl3);
         for(unsigned int i = 0; i<2; i++){
             if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == itr){
                 (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
                 break;
             }
         }
-        tng = Triangolo(id_tr, po._id, (tr._vertici)[1], (tr._vertici)[2], idl2, (tr._lati)[1], idl3);
         id_tr++;
         _listaTriangoli.push_back(tng);
         if (_listaLati[(tr._lati)[1]]._listIdTr.size() == 2){
@@ -475,8 +475,8 @@ namespace ProjectLibrary
             _codaDelaunay.push_back(il_it);
         }
         for(unsigned int i = 0; i<2; i++){
-            if((_listaLati[(tr._lati)[1]]._listIdTr)[i] == itr){
-                (_listaLati[(tr._lati)[1]]._listIdTr)[i] = tng._id;
+            if((_listaLati[(tr._lati)[2]]._listIdTr)[i] == itr){
+                (_listaLati[(tr._lati)[2]]._listIdTr)[i] = tng._id;
                 break;
             }
         }
@@ -491,6 +491,7 @@ namespace ProjectLibrary
         Triangolo tr;
         array<unsigned int, 2> il_it;
         Triangolo tng;
+        Lato l_o = _listaLati[ilt];
         Lato l1;
         Lato l2;
         Lato l3;
@@ -498,7 +499,7 @@ namespace ProjectLibrary
         bool a1;
         bool a2;
         for(unsigned int k = 0; k<_listaLati[ilt]._listIdTr.size(); k++){
-            itr = (_listaLati[ilt]._listIdTr)[k];
+            itr = (l_o._listIdTr)[k];
             tr = _listaTriangoli[itr];
             for(unsigned int h = 0; h<3; h++){
                 if (((po._x*_listaPunti[(tr._vertici)[h]]._y) + (po._y*_listaPunti[(tr._vertici)[(h+1)%3]]._x)
@@ -514,19 +515,17 @@ namespace ProjectLibrary
                             l1 = Lato(ilt, po, _listaPunti[(tr._vertici)[h]], itr);
                             _listaLati[ilt] = l1;
                             l2 = Lato(id_lt, _listaPunti[(tr._vertici)[(h+1)%3]], po, itr);
-                            _listaLati.push_back(l2);
-                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                            ilt, (tr._lati)[h], id_lt);
+                            _listaLati.push_back(l2);                            
                             a1 = true;
                         } else {
                             l2 = Lato(ilt, po, _listaPunti[(tr._vertici)[h]], itr);
-                            _listaLati.push_back(l2);
+                            _listaLati[ilt] = l2;
                             l1 = Lato(id_lt, _listaPunti[(tr._vertici)[(h+1)%3]], po, itr);
-                            _listaLati[ilt] = l1;
-                            tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
-                                            id_lt, (tr._lati)[h], ilt);
+                            _listaLati.push_back(l1);
                             a1 = false;
                         }
+                        tng = Triangolo(itr, po._id, (tr._vertici)[h], (tr._vertici)[(h+1)%3],
+                                        ilt, (tr._lati)[h], id_lt);
                         _listaTriangoli[itr] = tng;
                         id_lt++;
                         cn++;
@@ -551,9 +550,9 @@ namespace ProjectLibrary
                         cn++;
                         break;
                     case 3:
-                        if (_listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p1 ||
-                            _listaPunti[(tr._vertici)[h]] == _listaLati[ilt]._p2){
-                            l4 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[(h+1)%2]], itr);
+                        if (_listaPunti[(tr._vertici)[h]] == l_o._p1 ||
+                            _listaPunti[(tr._vertici)[h]] == l_o._p2){
+                            l4 = Lato(id_lt, po, _listaPunti[(tr._vertici)[(h+1)%3]], itr);
                             a2 = true;
                             if(a1)
                                 lid = l3._id;
@@ -563,7 +562,7 @@ namespace ProjectLibrary
                                             lid, (tr._lati)[h], id_lt);
                         } else {
                             a2 = false;
-                            l4 = Lato(id_lt, po,  _listaPunti[(tr._vertici)[h]], itr);
+                            l4 = Lato(id_lt, po, _listaPunti[(tr._vertici)[h]], itr);
                             if(a1)
                                 lid = l1._id;
                             else
@@ -767,7 +766,6 @@ namespace ProjectLibrary
                         this->PuntoBordoHull(po, DM[1], idtriang, idlato);
                         break;
                     }
-
                     case 3: {//esterno
                         this->CollegaSenzaIntersezioni(po, idtriang, idlato);
                         break;
