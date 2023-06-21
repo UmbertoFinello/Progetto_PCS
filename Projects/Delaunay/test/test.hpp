@@ -279,6 +279,133 @@ TEST(TestClasseMesh, TestControlloDelaunay)
 
 }
 
+TEST(TestClassMesh, TestDentroMesh)
+{
+        // id punti
+        unsigned int idp1 = 0;
+        unsigned int idp2 = idp1+1;
+        unsigned int idp3 = idp1+2;
+        unsigned int idp4 = idp1+3;
+        unsigned int idp5 = idp1+4;
+        // id lati
+        unsigned int idl1 = 0;
+        unsigned int idl2 = idl1+1;
+        unsigned int idl3 = idl1+2;
+        unsigned int idl4 = idl1+3;
+        unsigned int idl5 = idl1+4;
+        unsigned int idl6 = idl1+5;
+        unsigned int idl7 = idl1+6;
+        unsigned int idl8 = idl1+7;
+        // id triangoli
+        unsigned int idt1 = 1;
+        unsigned int idt2 = idt1+1;
+        unsigned int idt3 = idt1+2;
+        unsigned int idt4 = idt1+3;
+        // coordinate p1
+        double p1x = 5;
+        double p1y = 2;
+        // coordinate p2
+        double p2x = 2;
+        double p2y = 6;
+        // coordinate p3
+        double p3x = 6;
+        double p3y = 9;
+        // coordinate p4
+        double p4x = 14;
+        double p4y = 7;
+        // coordinate p5
+        double p5x = 7;
+        double p5y = 6;
+        // Punti
+        Punto p1 = Punto(idp1,p1x,p1y);
+        Punto p2 = Punto(idp2,p2x,p2y);
+        Punto p3 = Punto(idp3,p3x,p3y);
+        Punto p4 = Punto(idp4,p4x,p4y);
+        Punto p5 = Punto(idp5,p5x,p5y);
+        // Lati
+        LatoTest l1 = LatoTest(idl1, p2, p1, idt1);
+        LatoTest l2 = LatoTest(idl2, p3, p2, idt2);
+        LatoTest l3 = LatoTest(idl3, p4, p3, idt3);
+        LatoTest l4 = LatoTest(idl4, p1, p4, idt4);
+        LatoTest l5 = LatoTest(idl5, p1, p5, idt1);
+        LatoTest l6 = LatoTest(idl6, p2, p5, idt2);
+        LatoTest l7 = LatoTest(idl7, p3, p5, idt3);
+        LatoTest l8 = LatoTest(idl8, p4, p5, idt4);
+        // id dilati interni
+        l5.LIT().push_back(idt4);
+        l6.LIT().push_back(idt1);
+        l7.LIT().push_back(idt2);
+        l8.LIT().push_back(idt3);
+        // id successivi
+        l1.Succ() = idl2;
+        l2.Succ() = idl3;
+        l3.Succ() = idl4;
+        l4.Succ() = idl1;
+        //id precedenti
+        l1.Prec() = idl4;
+        l2.Prec() = idl1;
+        l3.Prec() = idl2;
+        l4.Prec() = idl3;
+        // triangoli
+        TriangoloTest t1 = TriangoloTest(idt1,idp1,idp5,idp2,idl5,idl6,idl1);
+        TriangoloTest t2 = TriangoloTest(idt2,idp2,idp5,idp3,idl6,idl7,idl2);
+        TriangoloTest t3 = TriangoloTest(idt3,idp3,idp5,idp4,idl7,idl8,idl3);
+        TriangoloTest t4 = TriangoloTest(idt4,idp4,idp5,idp1,idl8,idl5,idl4);
+        // inizializzazione mesh (finalmente)
+        vector<Punto> vertici = { p1,p2,p3,p4,p5 };
+        vector<Lato> lati = { l1,l2,l3,l4,l5,l6,l7,l8 };
+        vector<Triangolo> triangoli = { t1,t2,t3,t4 };
+        MeshTest mesh;
+        mesh.LP() = vertici;
+        mesh.LL()= lati;
+        mesh.LTR()  = triangoli;
+        mesh.HB() = idl1;
+        // punto nuovo, dentro primo triangolo
+        double pnewx = 5;
+        double pnewy = 5;
+        unsigned int idpnew = idp1+5;
+        Punto pnew = Punto(idpnew,pnewx,pnewy);
+        // richiamo dentro mesh
+        array<unsigned int, 2> esito = mesh.DentroMesh(pnew);
+        string vero = to_string(0) + " " + to_string(1);
+        string result = to_string(esito[0]) + " " + to_string(esito[1]);
+        EXPECT_EQ(vero, result);
+
+        /*
+        // bordo interno
+        pnewx = 6;
+        pnewy = 4;
+        idpnew = idp1+5;
+        pnew = Punto(idpnew,pnewx,pnewy);
+
+
+        // bordo hull
+        pnewx = 10;
+        pnewy = 8;
+        idpnew = idp1+5;
+        pnew = Punto(idpnew,pnewx,pnewy);
+
+        // punto esterno
+        pnewx = 12;
+        pnewy = 3;
+        idpnew = idp1+5;
+        pnew = Punto(idpnew,pnewx,pnewy);
+
+        // ricerca in un altro triangolo interno
+        pnewx = ;
+        pnewy = ;
+        idpnew = idp1+5;
+        pnew = Punto(idpnew,pnewx,pnewy);
+
+        // ricerca in un altro triangolo bordo
+        pnewx = ;
+        pnewy = ;
+        idpnew = idp1+5;
+        pnew = Punto(idpnew,pnewx,pnewy);
+        */
+    }
+
+
 TEST(TestClasseMesh, TestCollegaSenzaIntersezioni)
 {
 
@@ -286,7 +413,102 @@ TEST(TestClasseMesh, TestCollegaSenzaIntersezioni)
 
 TEST(TestClassMesh, TestAccettabile)
 {
-
+    // id punti
+    unsigned int idp1 = 0;
+    unsigned int idp2 = idp1+1;
+    unsigned int idp3 = idp1+2;
+    unsigned int idp4 = idp1+3;
+    unsigned int idp5 = idp1+4;
+    // id lati
+    unsigned int idl1 = 0;
+    unsigned int idl2 = idl1+1;
+    unsigned int idl3 = idl1+2;
+    unsigned int idl4 = idl1+3;
+    unsigned int idl5 = idl1+4;
+    unsigned int idl6 = idl1+5;
+    unsigned int idl7 = idl1+6;
+    unsigned int idl8 = idl1+7;
+    // id triangoli
+    unsigned int idt1 = 1;
+    unsigned int idt2 = idt1+1;
+    unsigned int idt3 = idt1+2;
+    unsigned int idt4 = idt1+3;
+    // coordinate p1
+    double p1x = 5;
+    double p1y = 2;
+    // coordinate p2
+    double p2x = 2;
+    double p2y = 6;
+    // coordinate p3
+    double p3x = 6;
+    double p3y = 9;
+    // coordinate p4
+    double p4x = 14;
+    double p4y = 7;
+    // coordinate p5
+    double p5x = 7;
+    double p5y = 6;
+    // Punti
+    Punto p1 = Punto(idp1,p1x,p1y);
+    Punto p2 = Punto(idp2,p2x,p2y);
+    Punto p3 = Punto(idp3,p3x,p3y);
+    Punto p4 = Punto(idp4,p4x,p4y);
+    Punto p5 = Punto(idp5,p5x,p5y);
+    // Lati
+    LatoTest l1 = LatoTest(idl1, p2, p1, idt1);
+    LatoTest l2 = LatoTest(idl2, p3, p2, idt2);
+    LatoTest l3 = LatoTest(idl3, p4, p3, idt3);
+    LatoTest l4 = LatoTest(idl4, p1, p4, idt4);
+    LatoTest l5 = LatoTest(idl5, p1, p5, idt1);
+    LatoTest l6 = LatoTest(idl6, p2, p5, idt2);
+    LatoTest l7 = LatoTest(idl7, p3, p5, idt3);
+    LatoTest l8 = LatoTest(idl8, p4, p5, idt4);
+    // id dilati interni
+    l5.LIT().push_back(idt4);
+    l6.LIT().push_back(idt1);
+    l7.LIT().push_back(idt2);
+    l8.LIT().push_back(idt3);
+    // id successivi
+    l1.Succ() = idl2;
+    l2.Succ() = idl3;
+    l3.Succ() = idl4;
+    l4.Succ() = idl1;
+    //id precedenti
+    l1.Prec() = idl4;
+    l2.Prec() = idl1;
+    l3.Prec() = idl2;
+    l4.Prec() = idl3;
+    // triangoli
+    TriangoloTest t1 = TriangoloTest(idt1,idp1,idp5,idp2,idl5,idl6,idl1);
+    TriangoloTest t2 = TriangoloTest(idt2,idp2,idp5,idp3,idl6,idl7,idl2);
+    TriangoloTest t3 = TriangoloTest(idt3,idp3,idp5,idp4,idl7,idl8,idl3);
+    TriangoloTest t4 = TriangoloTest(idt4,idp4,idp5,idp1,idl8,idl5,idl4);
+    // inizializzazione mesh (finalmente)
+    vector<Punto> vertici = { p1,p2,p3,p4,p5 };
+    vector<Lato> lati = { l1,l2,l3,l4,l5,l6,l7,l8 };
+    vector<Triangolo> triangoli = { t1,t2,t3,t4 };
+    MeshTest mesh;
+    mesh.LP() = vertici;
+    mesh.LL()= lati;
+    mesh.LTR()  = triangoli;
+    mesh.HB() = idl1;
+    // punto nuovo
+    double pnewx = 14;
+    double pnewy = 9;
+    unsigned int idpnew = idp1+5;
+    Punto pnew = Punto(idpnew,pnewx,pnewy);
+    // test accettabile
+    string result ;
+    for(unsigned int i = 0; i<4; i++){
+        if(mesh.accettabile(pnew, mesh.LP()[i]))
+        {
+            result = result + "T ";
+        }else{
+            result = result + "F ";
+        }
+    }
+    string vero = "F F T T ";
+    EXPECT_EQ(vero, result);
 }
 
 TEST(TestClassMesh, TestCostruttore)

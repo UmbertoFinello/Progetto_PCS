@@ -108,7 +108,7 @@ namespace ProjectLibrary
         array <unsigned int, 3> idLati;
         bool ext = true; // true: punto fuori triangolo
         Lato l = _listaLati[_hullBeginLato];
-        unsigned int idCorr = l._listIdTr[0]; // id triangolo vecchio per ricerca
+        unsigned int idCorr = l._listIdTr[0]; // id triangolo corrente
         while(ext)
         {
             // punti del triangolo
@@ -267,23 +267,29 @@ namespace ProjectLibrary
     bool Mesh::accettabile(const Punto& pnew, const Punto& point)
     {
         unsigned int counter = 0;
-        bool result = true;
         unsigned int ilato = _hullBeginLato;
         bool inizio = true;
-        Punto dir1 = pnew - point;
-        unsigned int iv = 0;
+        Punto dir1 = point - pnew;
+        unsigned int iv = 0; // variabile da passare perchè il costruttore è costante, tanto non ci interessa l'id di questo punto
         double x_pt;
         double y_pt;
+        double dir1Rap;
+        double dir2Rap;
         while((_hullBeginLato != ilato) || inizio)
         {
+            inizio = false;
             // ricontrollare per l'antisimmetria del prodotto scalare
             Punto dir2 = _listaLati[ilato]._p2 - _listaLati[ilato]._p1;
-            if(abs(crossProduct(dir1,dir2)) < Punto::geometricTol) // da rivedere, tolleranza è dei punti, andrà bene uguale?
+            if(abs(crossProduct(dir1,dir2)) > Punto::geometricTol)
             {
                 // non mi interessa l'id
                 // point è la slz del sistema lineare
-                x_pt = (((point)._x - pnew._x)*dir2._y-((point)._y - pnew._y)*dir2._x) / crossProduct(dir1,dir2);
-                y_pt = (( (point)._y - pnew._y)*dir1._x-((point)._x - pnew._x)*dir1._y)/crossProduct(dir1,dir2);
+                //x_pt = (((point._x - pnew._x)*dir2._y)-((point._y - pnew._y)*dir2._x))/crossProduct(dir1,dir2);
+                //y_pt = (((point._y - pnew._y)*dir1._x)-((point._x - pnew._x)*dir1._y))/crossProduct(dir1,dir2);
+                dir1Rap = dir1._y/dir1._x;
+                dir2Rap = dir2._y/dir2._x;
+                x_pt = (pnew._y -_listaLati[ilato]._p1._y -dir1Rap*pnew._x +dir2Rap*_listaLati[ilato]._p1._x )/(dir2Rap-dir1Rap);
+                y_pt = dir2Rap*(x_pt -_listaLati[ilato]._p1._x) + _listaLati[ilato]._p1._y;
                 Punto pt = Punto(iv, x_pt, y_pt);
 
                 if( (pt._x >= min((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x)) &&
@@ -296,22 +302,18 @@ namespace ProjectLibrary
                     if(pt == _listaLati[ilato]._p1 || pt == _listaLati[ilato]._p2)
                     {
                         counter = counter + 1;
-                        if (counter >2)
-                        {
-                            result = false;
-                            break;
+                        if (counter >2){
+                            return false;
                         }
                     }
-                    else
-                    {
-                        result = false;
-                        break;
+                    else{
+                        return false;
                     }
                 }
             }
             ilato = _listaLati[ilato]._succ;
         }
-        return result;
+        return true;
     }
 
     void Mesh::CollegaSenzaIntersezioni(const Punto& pnew, unsigned int& id_t, unsigned int& id_l)
