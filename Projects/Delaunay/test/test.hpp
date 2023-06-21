@@ -14,6 +14,7 @@ class LatoTest : public Lato
 public:
     LatoTest(unsigned int& id, const Punto& p1, const Punto& p2, unsigned int& idtr):Lato(id, p1, p2, idtr){}
     LatoTest(const LatoTest& lat):Lato(lat){}
+    LatoTest(const Lato& lat):Lato(lat){}
     LatoTest(){}
     unsigned int& Prec(){return _prec;}
     unsigned int& Succ(){return _succ;}
@@ -330,14 +331,18 @@ TEST(TestClasseMesh, TestPuntoInterno)
     MeshTest m = MeshTest();
     unsigned int id_t = 0;
     unsigned int idt1 = 0;
+    unsigned int idt2 = 1;
     unsigned int idp1 = 0;
-    unsigned int idp2 = idp1+1;
-    unsigned int idp3 = idp1+2;
-    unsigned int idp4 = idp1+3;
+    unsigned int idp2 = 1;
+    unsigned int idp3 = 2;
+    unsigned int idp4 = 3;
+    unsigned int idp5 = 4;
     unsigned int idl1 = 0;
-    unsigned int idl2 = idl1+1;
-    unsigned int idl3 = idl1+2;
-    unsigned int idl = 1 + idl3;
+    unsigned int idl2 = 1;
+    unsigned int idl3 = 2;
+    unsigned int idl4 = 3;
+    unsigned int idl5 = 4;
+    unsigned int idl = 1 + idl5;
     double c1 = 0;
     double c2 = 1;
     double c3 = -1;
@@ -347,22 +352,34 @@ TEST(TestClasseMesh, TestPuntoInterno)
     Punto p1 = Punto(idp1,c1,c1);
     Punto p2 = Punto(idp2,c5,c3);
     Punto p3 = Punto(idp3,c1,c4);
-    Punto p4 = Punto(idp4,c2,c2);
+    Punto p4 = Punto(idp4,c1,c3);
+    Punto p5 = Punto(idp5,c2,c2);
     LatoTest l1 = LatoTest(idl1, p1, p2, idt1);
     LatoTest l2 = LatoTest(idl2, p2, p3, idt1);
     LatoTest l3 = LatoTest(idl3, p3, p1, idt1);
+    LatoTest l4 = LatoTest(idl4, p1, p4, idt2);
+    LatoTest l5 = LatoTest(idl5, p4, p2, idt2);
     Triangolo t1 = Triangolo(idt1, idp1, idp2, idp3, idl1, idl2, idl3);
     id_t++;
-    m.LTR() = {t1};
-    m.LP() = {p1, p2, p3, p4};
-    m.LL() = {l1, l2, l3};
-    m.PuntoInterno(p4, idt1, id_t, idl);
-    string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 4.000000 -1.000000\n2 0.000000 3.000000\n"
-                  "3 1.000000 1.000000\nLati\nId p1 p2 Length TriangoliAdiacenti\n0 0 1 4.123106 0\n"
-                  "1 1 2 5.656854 1\n2 2 0 3.000000 2\n3 3 0 1.414214 0,2\n4 1 3 3.605551 0,1\n"
-                  "5 2 3 2.236068 1,2\nTriangoli\nId p1 p2 p3 l1 l2 l3\n0 3 0 1 3 0 4\n1 3 1 2 4 1 5\n"
-                  "2 3 2 0 5 2 3\n";
-    EXPECT_EQ(m.Show(), vero);
+    Triangolo t2 =Triangolo(idt2, idp1, idp4, idp2, idl4, idl5, idl1);
+    id_t++;
+    l1.LIT().push_back(idt2);
+    m.LTR() = {t1, t2};
+    m.LP() = {p1, p2, p3, p4, p5};
+    m.LL() = {l1, l2, l3, l4, l5};
+    m.PuntoInterno(p5, idt1, id_t, idl);
+    string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 4.000000 -1.000000\n2 0.000000 3.000000\n"
+                       "3 0.000000 -1.000000\n4 1.000000 1.000000\nLati\nId p1 p2 Length TriangoliAdiacenti\n"
+                       "0 0 1 4.123106 0,1\n1 1 2 5.656854 2\n2 2 0 3.000000 3\n3 0 3 1.000000 1\n"
+                       "4 3 1 4.000000 1\n5 4 0 1.414214 0,3\n6 1 4 3.605551 0,2\n7 2 4 2.236068 2,3\n"
+                       "Triangoli\nId p1 p2 p3 l1 l2 l3\n0 4 0 1 5 0 6\n1 0 3 1 3 4 0\n2 4 1 2 6 1 7\n"
+                       "3 4 2 0 7 2 5\n";
+    string vero_CD = "0,0 ";
+    EXPECT_EQ(m.Show(), vero_mesh);
+    string sCD = "";
+    for(array<unsigned int,2> i : m.CD())
+        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+    EXPECT_EQ(sCD, vero_CD);
 }
 
 TEST(TestClasseMesh, TestPuntoBordoTriang)
@@ -370,25 +387,30 @@ TEST(TestClasseMesh, TestPuntoBordoTriang)
     MeshTest m = MeshTest();
     unsigned int id_t = 0;
     unsigned int idp1 = 0;
-    unsigned int idp2 = idp1+1;
-    unsigned int idp3 = idp1+2;
-    unsigned int idp4 = idp1+3;
-    unsigned int idp5 = idp1+4;
+    unsigned int idp2 = 1;
+    unsigned int idp3 = 2;
+    unsigned int idp4 = 3;
+    unsigned int idp5 = 4;
+    unsigned int idp6 = 5;
     unsigned int idl1 = 0;
-    unsigned int idl2 = idl1+1;
-    unsigned int idl3 = idl1+2;
-    unsigned int idl4 = idl1+3;
-    unsigned int idl5 = idl1+4;
-    unsigned int idl = 1 + idl5;
+    unsigned int idl2 = 1;
+    unsigned int idl3 = 2;
+    unsigned int idl4 = 3;
+    unsigned int idl5 = 4;
+    unsigned int idl6 = 5;
+    unsigned int idl7 = 6;
+    unsigned int idl = 1 + idl7;
     double c1 = 0;
     double c2 = 1;
     double c3 = 0.5;
+    double c4 = -1;
 
     Punto p1 = Punto(idp1,c1,c1);
     Punto p2 = Punto(idp2,c2,c1);
     Punto p3 = Punto(idp3,c1,c2);
     Punto p4 = Punto(idp4,c2,c2);
-    Punto p5 = Punto(idp5,c3,c3);
+    Punto p5 = Punto(idp5,c4,c4);
+    Punto p6 = Punto(idp6,c3,c3);
     LatoTest l1 = LatoTest(idl1, p1, p2, id_t);
     LatoTest l2 = LatoTest(idl2, p2, p3, id_t);
     LatoTest l3 = LatoTest(idl3, p3, p1, id_t);
@@ -399,18 +421,181 @@ TEST(TestClasseMesh, TestPuntoBordoTriang)
     Triangolo t2 = Triangolo(id_t, idp2, idp4, idp3, idl4, idl5, idl2);
     l2.LIT().push_back(id_t);
     id_t++;
+    LatoTest l6 = LatoTest(idl6, p1, p5, id_t);
+    LatoTest l7 = LatoTest(idl7, p5, p2, id_t);
+    Triangolo t3 = Triangolo(id_t, idp1, idp5, idp2, idl6, idl7, idl1);
+    l1.LIT().push_back(id_t);
+    id_t++;
+    m.LTR() = {t1, t2, t3};
+    m.LP() = {p1, p2, p3, p4, p5, p6};
+    m.LL() = {l1, l2, l3, l4, l5, l6, l7};
+    m.PuntoBordoTriang(p6, idl2, id_t, idl);
+    string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
+                  "3 1.000000 1.000000\n4 -1.000000 -1.000000\n5 0.500000 0.500000\nLati\n"
+                  "Id p1 p2 Length TriangoliAdiacenti\n0 0 1 1.000000 0,2\n1 5 0 0.707107 0,3\n"
+                  "2 2 0 1.000000 3\n3 1 3 1.000000 1\n4 3 2 1.000000 4\n5 0 4 1.414214 2\n"
+                  "6 4 1 2.236068 2\n7 1 5 0.707107 0,1\n8 5 2 0.707107 3,4\n9 5 3 0.707107 1,4\n"
+                  "Triangoli\nId p1 p2 p3 l1 l2 l3\n0 5 0 1 1 0 7\n1 5 1 3 7 3 9\n2 0 4 1 5 6 0\n"
+                  "3 5 2 0 8 2 1\n4 5 3 2 9 4 8\n";
+    EXPECT_EQ(m.Show(), vero);
+    string vero_CD = "0,0 ";
+    string sCD = "";
+    for(array<unsigned int,2> i : m.CD())
+        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+    EXPECT_EQ(sCD, vero_CD);
+}
+
+TEST(TestClasseMesh, TestPuntoBordoHull_NOCambioInizio)
+{
+    MeshTest m = MeshTest();
+    unsigned int id_t = 0;
+    unsigned int idt1 = 0;
+    unsigned int idt2 = 1;
+    unsigned int idp1 = 0;
+    unsigned int idp2 = 1;
+    unsigned int idp3 = 2;
+    unsigned int idp4 = 3;
+    unsigned int idp5 = 4;
+    unsigned int idl1 = 0;
+    unsigned int idl2 = 1;
+    unsigned int idl3 = 2;
+    unsigned int idl4 = 3;
+    unsigned int idl5 = 4;
+    unsigned int idl = 1 + idl5;
+    double c1 = 0;
+    double c2 = 1;
+    double c3 = -0.5;
+    double c4 = 0.5;
+
+    Punto p1 = Punto(idp1,c1,c1);
+    Punto p2 = Punto(idp2,c2,c1);
+    Punto p3 = Punto(idp3,c1,c2);
+    Punto p4 = Punto(idp4,c3,c4);
+    Punto p5 = Punto(idp5,c4,c4);
+    LatoTest l1 = LatoTest(idl1, p1, p2, idt1);
+    LatoTest l2 = LatoTest(idl2, p2, p3, idt1);
+    LatoTest l3 = LatoTest(idl3, p3, p1, idt1);
+    LatoTest l4 = LatoTest(idl4, p3, p4, idt2);
+    LatoTest l5 = LatoTest(idl5, p4, p1, idt2);
+    l1.Prec() = idl5;
+    l1.Succ() = idl2;
+    l2.Prec() = idl1;
+    l2.Succ() = idl4;
+    l4.Prec() = idl2;
+    l4.Succ() = idl5;
+    l5.Prec() = idl4;
+    l5.Succ() = idl1;
+    Triangolo t1 = Triangolo(idt1, idp1, idp2, idp3, idl1, idl2, idl3);
+    id_t++;
+    Triangolo t2 =Triangolo(idt2, idp1, idp3, idp4, idl3, idl4, idl5);
+    id_t++;
+    l3.LIT().push_back(idt2);
     m.LTR() = {t1, t2};
     m.LP() = {p1, p2, p3, p4, p5};
     m.LL() = {l1, l2, l3, l4, l5};
-    m.PuntoBordoTriang(p5, idl2, id_t, idl);
-    string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
-                  "3 1.000000 1.000000\n4 0.500000 0.500000\nLati\nId p1 p2 Length TriangoliAdiacenti\n"
-                  "0 0 1 1.000000 0\n1 4 0 0.707107 0,2\n2 2 0 1.000000 2\n3 1 3 1.000000 1\n"
-                  "4 3 2 1.000000 3\n5 1 4 0.707107 0,1\n6 4 2 0.707107 2,3\n7 4 3 0.707107 1,3\nTriangoli\n"
-                  "Id p1 p2 p3 l1 l2 l3\n0 4 0 1 1 0 5\n1 4 1 3 5 3 7\n2 4 2 0 6 2 1\n3 4 3 2 7 4 6\n";
-    EXPECT_EQ(m.Show(), vero);
+    m.HB() = idl1;
+    m.PuntoBordoHull(p5, idl2, id_t, idl);
+    string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
+                       "3 -0.500000 0.500000\n4 0.500000 0.500000\nLati\nId p1 p2 Length TriangoliAdiacenti\n"
+                       "0 0 1 1.000000 0\n1 1 4 0.707107 0\n2 2 0 1.000000 2,1\n3 2 3 0.707107 1\n"
+                       "4 3 0 0.707107 1\n5 4 0 0.707107 0,2\n6 4 2 0.707107 2\nTriangoli\n"
+                       "Id p1 p2 p3 l1 l2 l3\n0 1 4 0 1 5 0\n1 0 2 3 2 3 4\n2 4 2 0 6 2 5\n";
+    EXPECT_EQ(m.Show(), vero_mesh);
+
+    string vero_CD = "2,2 ";
+    string sCD = "";
+    for(array<unsigned int,2> i : m.CD())
+        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+    EXPECT_EQ(sCD, vero_CD);
+
+    string vero_Hull = " 0 1 6 3 4";
+    bool entra = true;
+    unsigned int i = m.HB();
+    string sHull = "";
+    while(i != m.HB() || entra){
+        entra = false;
+        sHull = sHull + " " + to_string(i);
+        LatoTest a = (m.LL())[i];
+        i = a.Succ();
+    }
+    EXPECT_EQ(sHull, vero_Hull);
 }
 
+TEST(TestClasseMesh, TestPuntoBordoHull_CambioInizioHull)
+{
+    MeshTest m = MeshTest();
+    unsigned int id_t = 0;
+    unsigned int idt1 = 0;
+    unsigned int idt2 = 1;
+    unsigned int idp1 = 0;
+    unsigned int idp2 = 1;
+    unsigned int idp3 = 2;
+    unsigned int idp4 = 3;
+    unsigned int idp5 = 4;
+    unsigned int idl1 = 0;
+    unsigned int idl2 = 1;
+    unsigned int idl3 = 2;
+    unsigned int idl4 = 3;
+    unsigned int idl5 = 4;
+    unsigned int idl = 1 + idl5;
+    double c1 = 0;
+    double c2 = 1;
+    double c3 = -0.5;
+    double c4 = 0.5;
+
+    Punto p1 = Punto(idp1,c1,c1);
+    Punto p2 = Punto(idp2,c2,c1);
+    Punto p3 = Punto(idp3,c1,c2);
+    Punto p4 = Punto(idp4,c3,c4);
+    Punto p5 = Punto(idp5,c4,c1);
+    LatoTest l1 = LatoTest(idl1, p1, p2, idt1);
+    LatoTest l2 = LatoTest(idl2, p2, p3, idt1);
+    LatoTest l3 = LatoTest(idl3, p3, p1, idt1);
+    LatoTest l4 = LatoTest(idl4, p3, p4, idt2);
+    LatoTest l5 = LatoTest(idl5, p4, p1, idt2);
+    l1.Prec() = idl5;
+    l1.Succ() = idl2;
+    l2.Prec() = idl1;
+    l2.Succ() = idl4;
+    l4.Prec() = idl2;
+    l4.Succ() = idl5;
+    l5.Prec() = idl4;
+    l5.Succ() = idl1;
+    Triangolo t1 = Triangolo(idt1, idp1, idp2, idp3, idl1, idl2, idl3);
+    id_t++;
+    Triangolo t2 =Triangolo(idt2, idp1, idp3, idp4, idl3, idl4, idl5);
+    id_t++;
+    l3.LIT().push_back(idt2);
+    m.LTR() = {t1, t2};
+    m.LP() = {p1, p2, p3, p4, p5};
+    m.LL() = {l1, l2, l3, l4, l5};
+    m.HB() = idl1;
+    m.PuntoBordoHull(p5, idl1, id_t, idl);
+    string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
+                       "3 -0.500000 0.500000\n4 0.500000 0.000000\nLati\nId p1 p2 Length TriangoliAdiacenti\n"
+                       "0 0 4 0.500000 0\n1 1 2 1.414214 2\n2 2 0 1.000000 0,1\n3 2 3 0.707107 1\n"
+                       "4 3 0 0.707107 1\n5 4 2 1.118034 0,2\n6 4 1 0.500000 2\nTriangoli\n"
+                       "Id p1 p2 p3 l1 l2 l3\n0 0 4 2 0 5 2\n1 0 2 3 2 3 4\n2 4 1 2 6 1 5\n";
+    EXPECT_EQ(m.Show(), vero_mesh);
+
+    string vero_CD = "2,0 ";
+    string sCD = "";
+    for(array<unsigned int,2> i : m.CD())
+        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+    EXPECT_EQ(sCD, vero_CD);
+
+    string vero_Hull = " 0 6 1 3 4";
+    bool entra = true;
+    unsigned int i = m.HB();
+    string sHull = "";
+    while(i != m.HB() || entra){
+        entra = false;
+        sHull = sHull + " " + to_string(i);
+        LatoTest a = (m.LL())[i];
+        i = a.Succ();
+    }
+    EXPECT_EQ(sHull, vero_Hull);
+}
 
 TEST(TestClassMesh, TestAccettabile)
 {

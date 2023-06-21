@@ -615,18 +615,15 @@ namespace ProjectLibrary
 
     void Mesh::PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt)
     {
-        Lato l = _listaLati[ilt];
+        Lato lat = _listaLati[ilt];
         array<unsigned int, 2> il_it;
-        bool cambio_inizio = false;
-        if(_hullBeginLato == ilt)
-            cambio_inizio =true;
         unsigned int itr = (_listaLati[ilt]._listIdTr)[0];
         unsigned int pos;
         Triangolo tr = _listaTriangoli[itr];
         unsigned int pnl;
         for (unsigned h = 0; h<3; h++){
-            if(_listaPunti[(_listaTriangoli[itr]._vertici)[h]] != _listaLati[ilt]._p1 ||
-                _listaPunti[(_listaTriangoli[itr]._vertici)[h]] != _listaLati[ilt]._p2)
+            if(!(_listaPunti[(_listaTriangoli[itr]._vertici)[h]] == lat._p1 ||
+                  _listaPunti[(_listaTriangoli[itr]._vertici)[h]] == lat._p2))
             {
                 pnl = (_listaTriangoli[itr]._vertici)[h];
                 pos = h;
@@ -636,20 +633,20 @@ namespace ProjectLibrary
         _listaLati[ilt] = l1;
         Lato l2 = Lato(id_lt, po, _listaPunti[pnl], itr);
         _listaLati.push_back(l2);
-        Triangolo tng = Triangolo(itr, _listaLati[ilt]._p1._id, po._id, pnl, ilt, (tr._lati)[pos], id_lt);
+        Triangolo tng = Triangolo(itr, lat._p1._id, po._id, pnl, ilt, id_lt, (tr._lati)[pos]);
         _listaTriangoli[itr] = tng;
         id_lt++;
         if(_listaLati[(tr._lati)[pos]]._listIdTr.size() == 2){
             il_it = {(tr._lati)[pos], itr};
             _codaDelaunay.push_back(il_it);
         }
-        Lato l3 = Lato(id_lt, po, _listaLati[ilt]._p1, id_tr);
+        Lato l3 = Lato(id_lt, po, lat._p2, id_tr);
         _listaLati.push_back(l3);
-        tng = Triangolo(id_tr, po._id, _listaLati[ilt]._p2._id, pnl, id_lt, (tr._lati)[(pos+2)%3],
+        tng = Triangolo(id_tr, po._id, lat._p2._id, pnl, id_lt, (tr._lati)[(pos+2)%3],
                         l2._id);
         (_listaLati[l2._id]._listIdTr).push_back(id_tr);
         _listaTriangoli.push_back(tng);
-        for (unsigned int j = 0; j< _listaLati[(tr._lati)[pos-1]]._listIdTr.size(); j++){
+        for (unsigned int j = 0; j< _listaLati[(tr._lati)[(pos+2)%3]]._listIdTr.size(); j++){
             if ((_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] == itr)
                 (_listaLati[(tr._lati)[(pos+2)%3]]._listIdTr)[j] = id_tr;
         }
@@ -659,12 +656,10 @@ namespace ProjectLibrary
         }
         id_tr++;
         id_lt++;
-        _listaLati[l1._id]._prec = l._prec;
+        _listaLati[l1._id]._prec = lat._prec;
         _listaLati[l3._id]._prec = l1._id;
         _listaLati[l1._id]._succ = l3._id;
-        _listaLati[l3._id]._succ = l._succ;
-        if(cambio_inizio)
-            _hullBeginLato = l1._id;
+        _listaLati[l3._id]._succ = lat._succ;
     }
 
     Mesh::Mesh(const vector<Punto>& listaPunti):
