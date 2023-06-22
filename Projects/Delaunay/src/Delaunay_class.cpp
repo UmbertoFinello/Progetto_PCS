@@ -660,6 +660,7 @@ namespace ProjectLibrary
         _listaLati[l3._id]._prec = l1._id;
         _listaLati[l1._id]._succ = l3._id;
         _listaLati[l3._id]._succ = lat._succ;
+        _listaLati[lat._succ]._prec = l3._id;
     }
 
     Mesh::Mesh(const vector<Punto>& listaPunti):

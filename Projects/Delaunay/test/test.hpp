@@ -508,17 +508,30 @@ TEST(TestClasseMesh, TestPuntoBordoHull_NOCambioInizio)
         sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 
-    string vero_Hull = " 0 1 6 3 4";
-    bool entra = true;
+    string vero_Hull_succ = " 0 1 6 3 4 0";
+    unsigned int entra = 0;
     unsigned int i = m.HB();
-    string sHull = "";
-    while(i != m.HB() || entra){
-        entra = false;
-        sHull = sHull + " " + to_string(i);
+    string sHull_succ = "";
+    while(entra<2){
+        if (i == m.HB())
+            entra++;
+        sHull_succ = sHull_succ + " " + to_string(i);
         LatoTest a = (m.LL())[i];
         i = a.Succ();
     }
-    EXPECT_EQ(sHull, vero_Hull);
+    string vero_Hull_prec = " 0 4 3 6 1 0";
+    entra = 0;
+    i = m.HB();
+    string sHull_prec = "";
+    while(entra<2){
+        if (i == m.HB())
+            entra++;
+        sHull_prec = sHull_prec + " " + to_string(i);
+        LatoTest a = (m.LL())[i];
+        i = a.Prec();
+    }
+    EXPECT_EQ(sHull_succ, vero_Hull_succ);
+    EXPECT_EQ(sHull_prec, vero_Hull_prec);
 }
 
 TEST(TestClasseMesh, TestPuntoBordoHull_CambioInizioHull)
@@ -584,17 +597,30 @@ TEST(TestClasseMesh, TestPuntoBordoHull_CambioInizioHull)
         sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 
-    string vero_Hull = " 0 6 1 3 4";
-    bool entra = true;
+    string vero_Hull_succ = " 0 6 1 3 4 0";
+    unsigned int entra = 0;
     unsigned int i = m.HB();
-    string sHull = "";
-    while(i != m.HB() || entra){
-        entra = false;
-        sHull = sHull + " " + to_string(i);
+    string sHull_succ = "";
+    while(entra<2){
+        if (i == m.HB())
+            entra++;
+        sHull_succ = sHull_succ + " " + to_string(i);
         LatoTest a = (m.LL())[i];
         i = a.Succ();
     }
-    EXPECT_EQ(sHull, vero_Hull);
+    string vero_Hull_prec = " 0 4 3 1 6 0";
+    entra = 0;
+    i = m.HB();
+    string sHull_prec = "";
+    while(entra<2){
+        if (i == m.HB())
+            entra++;
+        sHull_prec = sHull_prec + " " + to_string(i);
+        LatoTest a = (m.LL())[i];
+        i = a.Prec();
+    }
+    EXPECT_EQ(sHull_succ, vero_Hull_succ);
+    EXPECT_EQ(sHull_prec, vero_Hull_prec);
 }
 
 TEST(TestClassMesh, TestAccettabile)
