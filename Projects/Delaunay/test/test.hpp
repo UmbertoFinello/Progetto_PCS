@@ -378,7 +378,7 @@ TEST(TestClasseMesh, TestPuntoInterno)
     EXPECT_EQ(m.Show(), vero_mesh);
     string sCD = "";
     for(array<unsigned int,2> i : m.CD())
-        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+        sCD = sCD + to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 }
 
@@ -441,7 +441,7 @@ TEST(TestClasseMesh, TestPuntoBordoTriang)
     string vero_CD = "0,0 ";
     string sCD = "";
     for(array<unsigned int,2> i : m.CD())
-        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+        sCD = sCD + to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 }
 
@@ -505,7 +505,7 @@ TEST(TestClasseMesh, TestPuntoBordoHull_NOCambioInizio)
     string vero_CD = "2,2 ";
     string sCD = "";
     for(array<unsigned int,2> i : m.CD())
-        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+        sCD = sCD + to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 
     string vero_Hull_succ = " 0 1 6 3 4 0";
@@ -594,7 +594,7 @@ TEST(TestClasseMesh, TestPuntoBordoHull_CambioInizioHull)
     string vero_CD = "2,0 ";
     string sCD = "";
     for(array<unsigned int,2> i : m.CD())
-        sCD = to_string(i[0]) + "," + to_string(i[1]) + " ";
+        sCD = sCD + to_string(i[0]) + "," + to_string(i[1]) + " ";
     EXPECT_EQ(sCD, vero_CD);
 
     string vero_Hull_succ = " 0 6 1 3 4 0";
