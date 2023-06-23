@@ -430,14 +430,14 @@ TEST(TestClasseMesh, TestPuntoBordoTriang)
     m.LP() = {p1, p2, p3, p4, p5, p6};
     m.LL() = {l1, l2, l3, l4, l5, l6, l7};
     m.PuntoBordoTriang(p6, idl2, id_t, idl);
-    string vero = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
+    string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
                   "3 1.000000 1.000000\n4 -1.000000 -1.000000\n5 0.500000 0.500000\nLati\n"
                   "Id p1 p2 Length TriangoliAdiacenti\n0 0 1 1.000000 0,2\n1 5 0 0.707107 0,3\n"
                   "2 2 0 1.000000 3\n3 1 3 1.000000 1\n4 3 2 1.000000 4\n5 0 4 1.414214 2\n"
                   "6 4 1 2.236068 2\n7 1 5 0.707107 0,1\n8 5 2 0.707107 3,4\n9 5 3 0.707107 1,4\n"
                   "Triangoli\nId p1 p2 p3 l1 l2 l3\n0 5 0 1 1 0 7\n1 5 1 3 7 3 9\n2 0 4 1 5 6 0\n"
                   "3 5 2 0 8 2 1\n4 5 3 2 9 4 8\n";
-    EXPECT_EQ(m.Show(), vero);
+    EXPECT_EQ(m.Show(), vero_mesh);
     string vero_CD = "0,0 ";
     string sCD = "";
     for(array<unsigned int,2> i : m.CD())
@@ -623,22 +623,34 @@ TEST(TestClasseMesh, TestPuntoBordoHull_CambioInizioHull)
     EXPECT_EQ(sHull_prec, vero_Hull_prec);
 }
 
-TEST(TestClassMesh, TestAccettabile)
-{
+/*
+TEST(TestClassMesh, TestCostruttoreMesh)
+{   
+    unsigned int idp = 0;
+    double c1 = 0;
+    double c2 = 1;
+    double c3 = 3;
+    double c4 = 0.5;
+    double c5 = 4;
+    double c6 = 2;
+    Punto p1 = Punto(idp,c1,c1);
+    idp++;
+    Punto p2 = Punto(idp,c2,c1);
+    idp++;
+    Punto p3 = Punto(idp,c4,c1);
+    idp++;
+    Punto p4 = Punto(idp,c3,c3);
+    idp++;
+    Punto p5 = Punto(idp,c5,c6);
+    idp++;
+    Punto p6 = Punto(idp,c2,c6);
+    vector<Punto> points = {p1, p2, p3, p4, p5, p6};
+    MeshTest mh = MeshTest(points);
 
+    string vero_mesh = "";
+    EXPECT_EQ(mh.Show(), vero_mesh);
 }
-
-TEST(TestClassMesh, TestCostruttore)
-{
-
-}
-
-
-
-
-
-
-
+*/
 
 
 #endif // __TEST_H
