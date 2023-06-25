@@ -704,11 +704,13 @@ namespace ProjectLibrary
         array<Punto, 4> v = {vx[0], vx[n], vy[0], vy[n]};
         array<Punto, 3> punti_scelti;
 
-        if((v[0] == v[3]) && (v[2] != v[1])){
+        if(((v[0] == v[3]) && (v[2] != v[1]))||
+            ((v[1] == v[3]) && (v[0] != v[2]))){
             punti_scelti[0]=v[0];
             punti_scelti[1]=v[1];
             punti_scelti[2]=v[2];
-        } else if ((v[0] != v[3]) && (v[2] == v[1])) {
+        } else if (((v[0] != v[3]) && (v[2] == v[1]))||
+                   ((v[0] == v[2]) && (v[1] != v[3]))) {
             punti_scelti[0]=v[0];
             punti_scelti[1]=v[1];
             punti_scelti[2]=v[3];
@@ -722,8 +724,8 @@ namespace ProjectLibrary
             array<unsigned int,3> indici_scelti = {0,0,0};
             for (unsigned int i = 0; i< 4;i++)
             {
-                Area = 0.5*abs ( (v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
-                                 (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x)   );
+                Area = 0.5*abs ((v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
+                                (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x));
                 if (abs(AreaMax - Area) < Punto::geometricTol_Squared*max(AreaMax,Area))
                 {
                     AreaMax = Area;
@@ -734,8 +736,8 @@ namespace ProjectLibrary
                 }
             }
             punti_scelti[0]= v[indici_scelti[0]];
-            punti_scelti[1]=v[indici_scelti[1]];
-            punti_scelti[2]=v[indici_scelti[2]];
+            punti_scelti[1]= v[indici_scelti[1]];
+            punti_scelti[2]= v[indici_scelti[2]];
         }        
         double Area = ((punti_scelti[0]._x*punti_scelti[1]._y) + (punti_scelti[0]._y*punti_scelti[2]._x)
                         + (punti_scelti[1]._x*punti_scelti[2]._y) - (punti_scelti[2]._x*punti_scelti[1]._y)
