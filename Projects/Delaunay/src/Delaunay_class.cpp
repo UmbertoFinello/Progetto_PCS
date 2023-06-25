@@ -174,6 +174,7 @@ namespace ProjectLibrary
         while(!(_codaDelaunay.empty())){            
             fc = _codaDelaunay.front(); //indice coda
             ix[0] = fc[1];
+            vector<unsigned int> lat_cd;
             latcom = _listaLati[fc[0]]; //lato in comune
             pv[0] = latcom._p1;
             pv[1] = latcom._p2;
@@ -190,8 +191,7 @@ namespace ProjectLibrary
                 for(unsigned int j = 0; j<3; j++){
                     if ((_listaTriangoli[id_nt]._lati)[j] != fc[0] &&
                         _listaLati[(_listaTriangoli[id_nt]._lati)[j]]._listIdTr.size() == 2){
-                        nec = {(_listaTriangoli[id_nt]._lati)[j], id_nt};
-                        _codaDelaunay.push_back(nec);
+                        lat_cd.push_back((_listaTriangoli[id_nt]._lati)[j]);
                     }
                 }
                 for(unsigned int h = 0; h<3; h++){
@@ -241,6 +241,16 @@ namespace ProjectLibrary
                     _listaTriangoli[ix[g]] = tn;
                 }
             }
+            for(unsigned int z = 0; z<lat_cd.size(); z++){
+                for(unsigned int h = 0; h<_listaLati[lat_cd[z]]._listIdTr.size(); h++){
+                    if ((_listaLati[lat_cd[z]]._listIdTr)[h] == id_nt)
+                        nec = {lat_cd[z], id_nt};
+                    else if ((_listaLati[lat_cd[z]]._listIdTr)[h] == fc[1])
+                        nec = {lat_cd[z], fc[1]};
+                }
+                _codaDelaunay.push_back(nec);
+            }
+
             _codaDelaunay.pop_front();
         }
 	}
@@ -743,7 +753,7 @@ namespace ProjectLibrary
                         + (punti_scelti[1]._x*punti_scelti[2]._y) - (punti_scelti[2]._x*punti_scelti[1]._y)
                         - (punti_scelti[2]._y*punti_scelti[0]._x) - (punti_scelti[1]._x*punti_scelti[0]._y));
 
-        if (abs(Area) < Punto::geometricTol)
+        if (Area < Punto::geometricTol)
         {
             Punto a = punti_scelti[1];
             punti_scelti[1] = punti_scelti[2];

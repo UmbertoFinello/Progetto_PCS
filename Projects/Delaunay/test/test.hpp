@@ -2090,9 +2090,41 @@ TEST(TestClassMesh, TestCostruttoreMesh)
     vector<Punto> points = {p1, p2, p3, p4, p5, p6};
     MeshTest mh = MeshTest(points);
 
-    string vero_mesh = "";
+    string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.500000 0.000000\n"
+                       "3 3.000000 3.000000\n4 4.000000 2.000000\n5 1.000000 2.000000\nLati\n"
+                       "Id p1 p2 Length TriangoliAdiacenti\n0 5 4 3.000000 2,0\n1 4 3 1.414214 0\n"
+                       "2 5 2 2.061553 3,1\n3 0 2 0.500000 1\n4 1 4 3.605551 2\n5 5 1 2.000000 3,2\n"
+                       "6 2 1 0.500000 3\n7 3 5 2.236068 0\n8 5 0 2.236068 1\nTriangoli\n"
+                       "Id p1 p2 p3 l1 l2 l3\n0 3 5 4 7 0 1\n1 0 2 5 3 2 8\n2 1 4 5 4 0 5\n3 2 1 5 6 5 2\n";
     EXPECT_EQ(mh.Show(), vero_mesh);
+
+    string vero_Hull_succ = " 1 7 8 3 6 4 1";
+    unsigned int entra = 0;
+    unsigned int i = mh.HB();
+    string sHull_succ = "";
+    while(entra<2){
+        if (i == mh.HB())
+            entra++;
+        sHull_succ = sHull_succ + " " + to_string(i);
+        LatoTest a = (mh.LL())[i];
+        i = a.Succ();
+    }
+    string vero_Hull_prec = " 1 4 6 3 8 7 1";
+    entra = 0;
+    i = mh.HB();
+    string sHull_prec = "";
+    while(entra<2){
+        if (i == mh.HB())
+            entra++;
+        sHull_prec = sHull_prec + " " + to_string(i);
+        LatoTest a = (mh.LL())[i];
+        i = a.Prec();
+    }
+    EXPECT_EQ(sHull_succ, vero_Hull_succ);
+    EXPECT_EQ(sHull_prec, vero_Hull_prec);
 }
+
+
 
 
 
