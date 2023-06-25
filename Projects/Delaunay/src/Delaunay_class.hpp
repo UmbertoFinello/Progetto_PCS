@@ -34,27 +34,37 @@ namespace ProjectLibrary
         Punto(){}
         string Show();
 
-        friend Punto operator-(const Punto& p1, const Punto& p2){
-            unsigned int id = p1._id;
-            double x = p1._x-p2._x;
-            double y = p1._y-p2._y;
-            return Punto(id, x, y);
+        friend Punto operator-(const Punto& punto1, const Punto& punto2){
+            unsigned int id = 0;
+            double xpunto = punto1._x-punto2._x;
+            double ypunto = punto1._y-punto2._y;
+            return Punto(id, xpunto, ypunto);
         }
 
         inline Punto& operator=(const Punto& p){_id = p._id; _x = p._x; _y = p._y; _inserito = p._inserito;
             return *this;}
     };
 
-    inline double normSquared(const double& x, const double& y)
+    inline double Norm(const double& x, const double& y)
     {
-      return x * x + y * y;
+      if(abs(x)<Punto::geometricTol){
+          return abs(y);
+      }else if (abs(y)<Punto::geometricTol){
+          return abs(x);
+      }else{
+          if(abs(x)<abs(y)){
+              return abs(y)*sqrt(1+pow(x/y,2));
+          }else if(abs(x)>abs(y)){
+              return abs(x)*sqrt(1+pow(y/x,2));
+          }else{
+              return abs(x)*sqrt(2);
+          }
+      }
     }
 
     inline bool operator==(const Punto& p1, const Punto& p2)
     {
-      return (normSquared(p1._x - p2._x, p1._y - p2._y) <=
-              Punto::geometricTol * Punto::geometricTol *
-              max(normSquared(p1._x, p1._y), normSquared(p2._x, p2._y)));
+      return (Norm(p1._x - p2._x, p1._y - p2._y) <= Punto::geometricTol * max(Norm(p1._x, p1._y), Norm(p2._x, p2._y)));
     }
 
     inline bool operator!=(const Punto& p1, const Punto& p2)

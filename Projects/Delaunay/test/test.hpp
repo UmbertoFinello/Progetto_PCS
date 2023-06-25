@@ -8,6 +8,7 @@
 using namespace testing;
 using namespace ProjectLibrary;
 using namespace SortLibrary;
+using namespace std;
 
 class LatoTest : public Lato
 {
@@ -16,6 +17,7 @@ public:
     LatoTest(const LatoTest& lat):Lato(lat){}
     LatoTest(const Lato& lat):Lato(lat){}
     LatoTest(){}
+    LatoTest(const Lato& lat):Lato(lat){}
     unsigned int& Prec(){return _prec;}
     unsigned int& Succ(){return _succ;}
     vector<unsigned int>& LIT(){return _listIdTr;}
@@ -152,7 +154,6 @@ TEST(TestClassLato, TestLatoConstructor_pitagora)
     EXPECT_EQ(l.Show(),right);
 }
 
-
 TEST(TestClassTriangolo, TestTriangoloConstructor)
 {
     unsigned int id = 4;   
@@ -222,7 +223,6 @@ TEST(TestSorting, TestMergeSort)
     EXPECT_EQ(vero, SVX);
     EXPECT_EQ(vero, SVY);
 }
-
 
 TEST(TestProduct, TestCrossProduct)
 {

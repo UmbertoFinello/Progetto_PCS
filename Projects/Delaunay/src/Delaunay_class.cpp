@@ -19,7 +19,7 @@ namespace ProjectLibrary
         _id(id), _p1(p1), _p2(p2)
     {
         _listIdTr.push_back(idtr);
-        _length = sqrt(pow((p1._x - p2._x),2) + pow((p1._y - p2._y),2));
+        _length = Norm(p1._x - p2._x,p1._y - p2._y);
     }
 
     Lato::Lato(const Lato& lat):
@@ -79,20 +79,23 @@ namespace ProjectLibrary
                to_string(_vertici[2]) + " lati:" + to_string(_lati[0]) + "," +to_string(_lati[1]) +
                "," + to_string(_lati[2]);
     }
-    
 
     array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
     {
         // 0:interno        1:bordo interno
         // 2:bordo hull     3:esterno
+
+        unsigned int counter = 0;
         array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
         // ricerca esterno/interno
         unsigned int pointer = _hullBeginLato;
         bool inizio = true; // variabile per non uscire alla prima iteraz.
-        Punto v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
-        Punto v2 = p - _listaLati[pointer]._p1;
+        Punto v1;
+        Punto v2;
         while((pointer != _hullBeginLato) || inizio){
             inizio=false;
+            v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
+            v2 = p - _listaLati[pointer]._p1;
             if(abs(crossProduct(v2,v1))<Punto::geometricTol){
                 result[0]= 2;
                 result[1]= pointer;
@@ -106,72 +109,50 @@ namespace ProjectLibrary
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
-        bool ext = true; // true: punto fuori triangolo
-        Lato l = _listaLati[_hullBeginLato];
-        unsigned int idCorr = l._listIdTr[0]; // id triangolo vecchio per ricerca
-        while(ext)
+        double m1x;
+        double M1x;
+        double m1y;
+        double M1y;
+        for( unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
         {
-            // punti del triangolo
+            counter = 0;
             idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
             idLati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
-            // verifico che il punto sia interno al triangolo considerato
+            // verifico che il punto sia interno al triangolo considerato _A_
+
             for(unsigned int i = 0; i<3;i++)
             {
+               // passo dai punti perchè non ho la certezza che i lati siano ordinati
+               // bene per fareil prodotto vettoriale
                v1 = _listaPunti[idPunti[(i+1)%3]]-_listaPunti[idPunti[i]];
                v2 = p - _listaPunti[idPunti[i]];
                if(abs(crossProduct(v2,v1))<Punto::geometricTol)
                {
-                   result[0]=1;
-                   for(unsigned int j = 0; j<3;j++) // j cicla sui lati
+                   for(unsigned int j = 0; j<3;j++) // j cicla sui lati, cerco il lato dove ho il punto
                    {
-                       // trova il lato su cui è il punto
-                       if( (p._x >= min(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x)) &&
-                           (p._x <= max(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x)) &&
-                           (p._y >= min(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y)) &&
-                           (p._y <= max(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y)))
-                       {
+                       m1x = min(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) - Punto::geometricTol;
+                       M1x = max(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) + Punto::geometricTol;
+                       m1y = min(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) - Punto::geometricTol;
+                       M1y = max(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) + Punto::geometricTol;
+                       if((p._x >= m1x)  && (p._y >= m1y) && (p._x <= M1x)  && (p._y <= M1y)){
+                           result[0]=1;
                            result[1]=idLati[j];// gli passo l'id del triangolo
                            return result;
                        }
                    }
                }
-               else if (crossProduct(v2,v1)<0)
+               else if (crossProduct(v2,v1)<0 )
                {
-                   result[0]=0;
-                   result[1]=idCorr;
-                   return result;
+                   counter ++;
+                   if (counter==3){
+                       result[0]=0;
+                       result[1]=idCorr;
+                       return result;
+                   }
                }
             }
-            Punto pmax = _listaPunti[idPunti[0]]; //primo elemento dei vertici,
-            //punto più distante dal punto di cui stiamo cercando la sistemazione
-            double dmax = normSquared(pmax._x - p._x, pmax._y - p._y);
-            // cerco punto a distanza massima
-            for (unsigned int i=1; i<3; i++)
-            {
-               double dist = normSquared(_listaPunti[idPunti[i]]._x - p._x, _listaPunti[idPunti[i]]._y - p._y);
-               if(dist > dmax)
-               {
-                   dmax = dist;
-                   pmax = _listaPunti[idPunti[i]];
-               }
-            }
-            // cerco il lato che non ha il punto massimo
-            for (unsigned int i=1; i<3; i++)
-            {
-               if((_listaLati[idLati[i]]._p1 != pmax) && (_listaLati[idLati[i]]._p2 != pmax))
-               {
-                   l=_listaLati[idLati[i]];
-                   break;
-               }
-            }
-            // vado sul triangolo giusto adiacente al lato
-            if(l._listIdTr[0]==idCorr)
-            {
-               idCorr=l._listIdTr[1];
-            }
-            else{
-               idCorr=l._listIdTr[0];
-            }
+
+
         }
         return result;
     }
@@ -264,58 +245,94 @@ namespace ProjectLibrary
         }
 	}
 
-    bool Mesh::accettabile(const Punto& pnew, const Punto& point)
+    bool Mesh::accettabile(const Punto& newpoint, const Punto& point)
     {
         unsigned int counter = 0;
-        bool result = true;
         unsigned int ilato = _hullBeginLato;
+        unsigned int latoCoincidente = 0;
         bool inizio = true;
-        Punto dir1 = pnew - point;
-        unsigned int iv = 0;
+        Punto dir1 = newpoint - point;
+        double dir1Rap = dir1._y/dir1._x;
+        unsigned int iv = 0; // variabile da passare perchè il costruttore è costante, tanto non ci interessa l'id di questo punto
         double x_pt;
         double y_pt;
+        double dir2Rap;
+        double m1x;  //variabili che uso per far si che la soluzione
+        double m2x;  //del sistema appartnìenga al segmento
+        double M1x;  // 1,2: relativo a dir 1,2
+        double M2x;
+        double m1y;  //variabili che uso per far si che la soluzione
+        double m2y;  //del sistema appartnìenga al segmento
+        double M1y;  // 1,2: relativo a dir 1,2
+        double M2y;
+        Punto dir2;
         while((_hullBeginLato != ilato) || inizio)
         {
+            inizio = false;
             // ricontrollare per l'antisimmetria del prodotto scalare
-            Punto dir2 = _listaLati[ilato]._p2 - _listaLati[ilato]._p1;
-            if(abs(crossProduct(dir1,dir2)) < Punto::geometricTol) // da rivedere, tolleranza è dei punti, andrà bene uguale?
+            dir2 = _listaLati[ilato]._p1 - _listaLati[ilato]._p2;
+            if(abs(crossProduct(dir1,dir2)) > Punto::geometricTol)
             {
-                // non mi interessa l'id
-                // point è la slz del sistema lineare
-                x_pt = (((point)._x - pnew._x)*dir2._y-((point)._y - pnew._y)*dir2._x) / crossProduct(dir1,dir2);
-                y_pt = (( (point)._y - pnew._y)*dir1._x-((point)._x - pnew._x)*dir1._y)/crossProduct(dir1,dir2);
+                // pt è la slz del sistema lineare
+                dir2Rap = dir2._y/dir2._x;
+                x_pt = (-point._y +_listaLati[ilato]._p2._y +(dir1Rap*point._x) - (dir2Rap*_listaLati[ilato]._p2._x) )/(dir1Rap-dir2Rap);
+                y_pt = dir2Rap*(x_pt -_listaLati[ilato]._p2._x) + _listaLati[ilato]._p2._y;
                 Punto pt = Punto(iv, x_pt, y_pt);
-
-                if( (pt._x >= min((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x)) &&
-                    (pt._x <= max((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x)) &&
-                    (pt._y >= min((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y)) &&
-                    (pt._y <= max((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y)) &&
-                    (pt._x >= min(pnew._x,(point)._x)) && (pt._x <= max(pnew._x,(point)._x)) &&
-                    (pt._y >= min(pnew._y,(point)._y)) && (pt._y <= max(pnew._y,(point)._y)) )
+                m1x = min(newpoint._x,(point)._x) - Punto::geometricTol;
+                M1x = max(newpoint._x,(point)._x) + Punto::geometricTol;
+                m1y = min(newpoint._y,(point)._y) - Punto::geometricTol;
+                M1y = max(newpoint._y,(point)._y) + Punto::geometricTol;
+                m2x = min((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x) - Punto::geometricTol;
+                M2x = max((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x) + Punto::geometricTol;
+                m2y = min((_listaLati[ilato ]._p1)._y,(_listaLati[ilato]._p2)._y) - Punto::geometricTol;
+                M2y = max((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y) + Punto::geometricTol;
+                if(  (pt._x >= m1x) && (pt._x >= m2x) && (pt._y >= m1y) && (pt._y >= m2y) &&
+                     (pt._x <= M1x) && (pt._x <= M2x) && (pt._y <= M1y) && (pt._y <= M2y)    )
                 {
                     if(pt == _listaLati[ilato]._p1 || pt == _listaLati[ilato]._p2)
                     {
                         counter = counter + 1;
                         if (counter >2)
                         {
-                            result = false;
-                            break;
+                            return false;
                         }
                     }
                     else
                     {
-                        result = false;
-                        break;
+                        return false;
+                    }
+                }
+            // newpoint non può appartenere al lato, ma se ho paralleli coincidenti ho sicuramente point
+            // uguale ad uno dei due lati che sto considerando
+            }
+            else if(_listaLati[ilato]._p1._id == point._id || _listaLati[ilato]._p2._id == point._id)
+            {
+                if(_listaLati[ilato]._p2._id == point._id)
+                { // il punto p2 sta "dopo" p1 e siccome i due vettori cono paralleli coincidenti no va bene
+                    return false;
+                }
+                else
+                {
+                    latoCoincidente = _listaLati[ilato]._prec;
+                    dir2 = _listaLati[latoCoincidente]._p1 - _listaLati[latoCoincidente]._p2;
+                    if(abs(crossProduct(dir1,dir2)) < Punto::geometricTol)
+                    {   // se prendo il lato precedente, avrà sicuramente un punto in comune e quindi
+                        // non devo controllare se sono paralleli non coincidenti
+                        return false;
+                    }else
+                    {
+                        return true;
                     }
                 }
             }
             ilato = _listaLati[ilato]._succ;
         }
-        return result;
+        return true;
     }
 
-    void Mesh::CollegaSenzaIntersezioni(const Punto& pnew, unsigned int& id_t, unsigned int& id_l)
+    void Mesh::CollegaSenzaIntersezioni(const Punto& nuovoPunto, unsigned int& id_t, unsigned int& id_l)
     {
+        //_listaPunti.push_back(nuovoPunto)
         // trovo il primo e l'ultimo lato utile
         unsigned int fineLato = _hullBeginLato;
         unsigned int inizioLato = _listaLati[_hullBeginLato]._prec;
@@ -323,23 +340,23 @@ namespace ProjectLibrary
         bool b = true; // variabile booleana di comodo
         unsigned int varaus;
         Punto paus;
-        if(accettabile(pnew, _listaLati[fineLato]._p1))
+        if(accettabile(nuovoPunto, _listaLati[fineLato]._p1))
         {
             while(b)
             {
                 fineLato = _listaLati[fineLato]._succ;
-                b = accettabile(pnew,_listaLati[fineLato]._p1);
+                b = accettabile(nuovoPunto,_listaLati[fineLato]._p1);
             }
             // in v abbiamo l'utimo false, il prec del puntato di finePunto sarà l'ultimo accettabile
             fineLato = _listaLati[fineLato]._prec;
-            if(accettabile(pnew,_listaLati[fineLato]._p1))
+            if(accettabile(nuovoPunto,_listaLati[fineLato]._p1))
             {
                 cambiaInizio = true;
                 b = true;
                 while(b)
                 {
                     inizioLato = _listaLati[inizioLato]._prec;
-                    b = accettabile(pnew, _listaLati[inizioLato]._p1);
+                    b = accettabile(nuovoPunto, _listaLati[inizioLato]._p1);
                 }
                 // in q abbiamo il primo false, il succ del puntato di q sarà il primo accettabile
                 inizioLato = _listaLati[inizioLato]._succ;
@@ -355,19 +372,19 @@ namespace ProjectLibrary
             // quello che io misuro come il primo vero, quindi passo a v e modifico
             // opportunamente q, rifaccio iol ciclo
             inizioLato = _listaLati[_hullBeginLato]._succ;
-            b = accettabile(pnew, _listaLati[inizioLato]._p1);
+            b = accettabile(nuovoPunto, _listaLati[inizioLato]._p1);
             while(!b)
             {
                 inizioLato = _listaLati[inizioLato]._succ;
-                b = accettabile(pnew,_listaLati[inizioLato]._p1);
+                b = accettabile(nuovoPunto,_listaLati[inizioLato]._p1);
             }
             // q a questo punto avrà il primo accettabile
             fineLato = _listaLati[inizioLato]._succ;
-            b = accettabile(pnew, _listaLati[fineLato]._p1);
+            b = accettabile(nuovoPunto, _listaLati[fineLato]._p1);
             while(b)
             {
                 fineLato = _listaLati[fineLato]._succ;
-                b = accettabile(pnew, _listaLati[fineLato]._p1);
+                b = accettabile(nuovoPunto, _listaLati[fineLato]._p1);
             }
             // in v ho il falso, lo riposto all'ultimo vero
             fineLato = _listaLati[fineLato]._prec;
@@ -380,34 +397,39 @@ namespace ProjectLibrary
         // id_t lo modificheremo quando creeremo i triangoli, per ora gli passo
         // fittiziamente solo una variabile che incremento di volta in volta
         unsigned int conta = 0;
-        while(copiaLato == _listaLati[fineLato]._succ)
+        while(copiaLato != _listaLati[fineLato]._succ)
         {
             varaus = id_t + conta;
             paus = _listaLati[copiaLato]._p1;
-            l = Lato(id_l, paus, pnew, varaus);
-
-            if((copiaLato == inizioLato)||(_listaLati[copiaLato]._succ == fineLato)){
-                conta++;
+            if(copiaLato == fineLato){
+                varaus = varaus - 1;
+                l = Lato(id_l, nuovoPunto, paus, varaus);
             }else{
-                conta++;
-                _listaLati[id_l]._listIdTr.push_back(id_t + conta);
+                _listaLati[copiaLato]._listIdTr.push_back(varaus);
+                l = Lato(id_l, paus, nuovoPunto, varaus);
             }
-            id_l++;
+            if((copiaLato != inizioLato)&&(copiaLato != fineLato)){
+                 varaus = varaus - 1;
+                l._listIdTr.push_back(varaus);
+            }
+            _listaLati.push_back(l);
             newLati.push_back(l);
+            copiaLato = _listaLati[copiaLato]._succ;
+            conta++;
+            id_l++;
         }
         // la variabile id_t non è stata cambiata ed è come è stata passata al programma
 
         // creo triangoli
-        // da finire
         copiaLato = inizioLato;
         unsigned int i = 0;
         Triangolo t;
         array<unsigned int, 2> lac; //lati da aggiungere a coda di Delaunay
-        while(copiaLato == _listaLati[fineLato]._succ)
+        while(copiaLato != fineLato)
         {
             lac = {_listaLati[copiaLato]._id, id_t};
             _codaDelaunay.push_back(lac);
-            t = Triangolo(id_t, _listaLati[copiaLato]._id, pnew._id, _listaLati[copiaLato]._succ,
+            t = Triangolo(id_t, _listaLati[copiaLato]._p1._id, nuovoPunto._id, _listaLati[copiaLato]._p2._id,
                           newLati[i]._id, newLati[i+1]._id, copiaLato);
             copiaLato = _listaLati[copiaLato]._succ;
             _listaTriangoli.push_back(t);
@@ -415,13 +437,15 @@ namespace ProjectLibrary
             id_t++;
         }
         // aggiornamento HullLato
-        _listaLati[newLati[0]._id]._succ = (newLati[newLati.size()-1])._id;
-        _listaLati[(newLati[newLati.size()-1])._id]._prec = newLati[0]._id;
-        _listaLati[inizioLato]._succ = newLati[0]._id;
         _listaLati[fineLato]._prec = (newLati[newLati.size()-1])._id;
+        _listaLati[(newLati[newLati.size()-1])._id]._prec = newLati[0]._id;
+        _listaLati[(newLati[newLati.size()-1])._id]._succ = fineLato;
+        _listaLati[newLati[0]._id]._prec = (_listaLati[_listaLati[inizioLato]._prec])._id;
+        _listaLati[newLati[0]._id]._succ = (newLati[newLati.size()-1])._id;
+        _listaLati[_listaLati[inizioLato]._prec]._succ = newLati[0]._id;
         // cambia inizio dell'Hull se serve
         if (cambiaInizio) {
-            _hullBeginLato= inizioLato;
+            _hullBeginLato= fineLato;
         }
     }
 
@@ -700,7 +724,7 @@ namespace ProjectLibrary
             {
                 Area = 0.5*abs ( (v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
                                  (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x)   );
-                if (AreaMax < Area) //TOLLERANZA
+                if (abs(AreaMax - Area) < Punto::geometricTol_Squared*max(AreaMax,Area))
                 {
                     AreaMax = Area;
                     for (unsigned int j = 0; j<3;j++)
@@ -717,7 +741,7 @@ namespace ProjectLibrary
                         + (punti_scelti[1]._x*punti_scelti[2]._y) - (punti_scelti[2]._x*punti_scelti[1]._y)
                         - (punti_scelti[2]._y*punti_scelti[0]._x) - (punti_scelti[1]._x*punti_scelti[0]._y));
 
-        if (Area < 0)       //TOLLERANZA
+        if (abs(Area) < Punto::geometricTol)
         {
             Punto a = punti_scelti[1];
             punti_scelti[1] = punti_scelti[2];
