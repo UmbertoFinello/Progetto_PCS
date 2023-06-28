@@ -18,7 +18,7 @@ namespace ProjectLibrary
       return x > y ? x : y;
     }
 
-    enum struct Posizione: int
+    enum struct Posizione: char
     {
         INTERNO = 'I',
         LATO_NON_FRONTIERA = 'L',
