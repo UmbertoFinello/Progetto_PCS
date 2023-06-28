@@ -82,9 +82,6 @@ namespace ProjectLibrary
 
     unsigned int Mesh::DentroMesh(const Punto& p, Posizione& DM)
     {
-        // 0:interno        1:bordo interno
-        // 2:bordo hull     3:esterno
-
         unsigned int counter = 0;
         unsigned int result = 0;// {tipo, id lati o triangoli}
         // ricerca esterno/interno
@@ -147,8 +144,6 @@ namespace ProjectLibrary
                     }
                }
             }
-
-
         }
         return result;
     }
@@ -246,7 +241,6 @@ namespace ProjectLibrary
                 }
                 _codaDelaunay.push_back(nec);
             }
-
             _codaDelaunay.pop_front();
         }
 	}
