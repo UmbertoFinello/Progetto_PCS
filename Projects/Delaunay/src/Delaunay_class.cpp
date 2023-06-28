@@ -81,81 +81,100 @@ namespace ProjectLibrary
     }
 
     array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
-    {
-        // 0:interno        1:bordo interno
-        // 2:bordo hull     3:esterno
+       {
+           // 0:interno        1:bordo interno
+           // 2:bordo hull     3:esterno
+           unsigned int counter = 0;
+           array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
+           unsigned int pointer = _hullBeginLato;
+           bool scarta = false;
+           bool inizio = true; // variabile per non uscire alla prima iteraz.
+           Punto v1;
+           Punto v2;
+           while((pointer != _hullBeginLato) || inizio){
+               inizio=false;
+               v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
+               v2 = p - _listaLati[pointer]._p1;
+               if(abs(crossProduct(v2,v1))<Punto::geometricTol){
+                   result[0]= 2;
+                   result[1]= pointer;
+                   return result;
+               }
+               else if (crossProduct(v2,v1)>0){
+                   result[0]=3;
+                   return result;
+               }
+               pointer = _listaLati[pointer]._succ;
+           }
+           array <unsigned int, 3> idPunti;
+           array <unsigned int, 3> idLati;
+           bool ext = true; // true: punto fuori triangolo
+           Lato l = _listaLati[_hullBeginLato];
+           unsigned int idCorr = l._listIdTr[0]; // id triangolo corrente
+           while(ext)
+           {
+               counter = 0;
+               idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
+               idLati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
+               // verifico che il punto sia interno al triangolo considerato _A_
 
-        unsigned int counter = 0;
-        array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
-        // ricerca esterno/interno
-        unsigned int pointer = _hullBeginLato;
-        bool inizio = true; // variabile per non uscire alla prima iteraz.
-        Punto v1;
-        Punto v2;
-        while((pointer != _hullBeginLato) || inizio){
-            inizio=false;
-            v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
-            v2 = p - _listaLati[pointer]._p1;
-            if(abs(crossProduct(v2,v1))<Punto::geometricTol){
-                result[0]= 2;
-                result[1]= pointer;
-                return result;
-            }
-            else if (crossProduct(v2,v1)>0){
-                result[0]=3;
-                return result;
-            }
-            pointer = _listaLati[pointer]._succ;
-        }
-        array <unsigned int, 3> idPunti;
-        array <unsigned int, 3> idLati;
-        double m1x;
-        double M1x;
-        double m1y;
-        double M1y;
-        for( unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
-        {
-            counter = 0;
-            idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
-            idLati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
-            // verifico che il punto sia interno al triangolo considerato _A_
-
-            for(unsigned int i = 0; i<3;i++)
-            {
-               // passo dai punti perchè non ho la certezza che i lati siano ordinati
-               // bene per fareil prodotto vettoriale
-               v1 = _listaPunti[idPunti[(i+1)%3]]-_listaPunti[idPunti[i]];
-               v2 = p - _listaPunti[idPunti[i]];
-               if(abs(crossProduct(v2,v1))<Punto::geometricTol)
+               for(unsigned int i = 0; i<3;i++)
                {
-                   for(unsigned int j = 0; j<3;j++) // j cicla sui lati, cerco il lato dove ho il punto
-                   {
-                       m1x = min(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) - Punto::geometricTol;
-                       M1x = max(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) + Punto::geometricTol;
-                       m1y = min(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) - Punto::geometricTol;
-                       M1y = max(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) + Punto::geometricTol;
-                       if((p._x >= m1x)  && (p._y >= m1y) && (p._x <= M1x)  && (p._y <= M1y)){
-                           result[0]=1;
-                           result[1]=idLati[j];// gli passo l'id del triangolo
-                           return result;
+                    // passo dai punti perchè non ho la certezza che i lati siano ordinati
+                    // bene per fareil prodotto vettoriale
+                    v1 = _listaPunti[idPunti[(i+1)%3]]-_listaPunti[idPunti[i]];
+                    v2 = p - _listaPunti[idPunti[i]];
+                    if(abs(crossProduct(v2,v1))<Punto::geometricTol){
+                        for(unsigned int j = 0; j<3;j++){ // j cicla sui lati
+                            if(((_listaPunti[idPunti[(i+1)%3]]._id == _listaPunti[idPunti[j]]._id)      &&
+                                (_listaPunti[idPunti[i]]._id == _listaPunti[idPunti[(j+1)%3]]._id) )    ||
+                                ((_listaPunti[idPunti[(i+1)%3]]._id == _listaPunti[idPunti[(j+1)%3]]._id)&&
+                                (_listaPunti[idPunti[i]]._id == _listaPunti[idPunti[j]]._id)             )){
+                                 result[0]=1;
+                                 result[1]=idLati[j];// gli passo l'id del triangolo
+                                 return result;
+                             }
+                        }
+                    }
+                    else if (crossProduct(v2,v1)<0 )
+                    {
+                        counter ++;
+                        if (counter==3){
+                            result[0]=0;
+                            result[1]=idCorr;
+                            return result;
+                        }
+                    }
+               }
+               // cerco in che direzione andare
+                    // se ci sono lati di bordo, non li prendo
+               scarta = false;
+                    // cerco il lato al bordo
+               for (unsigned int i = 0; i < 3; i++){
+                   if(_listaLati[idLati[i]]._listIdTr.size() < 2){
+                       scarta = true;
+                   }
+               }// se c'è, piglio l'altro
+               if(scarta){
+                   for (unsigned int i = 0; i < 3; i++){
+                       if((_listaLati[idLati[i]]._listIdTr.size() > 1) && (_listaLati[idLati[i]]._id != l.id)){
+                            l = _listaLati[idLati[i]];
                        }
                    }
-               }
-               else if (crossProduct(v2,v1)<0 )
-               {
-                   counter ++;
-                   if (counter==3){
-                       result[0]=0;
-                       result[1]=idCorr;
-                       return result;
+               }else{ // calcolo distanza punto segmento
+                   for (unsigned int i = 0; i<3; i++){
+
                    }
                }
+               if(l._listIdTr[0]==idCorr)
+              {
+                 idCorr=l._listIdTr[1];
+              }
+              else{
+                 idCorr=l._listIdTr[0];
+              }
             }
-
-
-        }
-        return result;
-    }
+       }
 
     void Mesh::ControlloDelaunay()
     {
@@ -738,7 +757,7 @@ namespace ProjectLibrary
                     }
                 }
             }
-            punti_scelti[0]= v[indici_scelti[0]];
+            punti_scelti[0]=v[indici_scelti[0]];
             punti_scelti[1]=v[indici_scelti[1]];
             punti_scelti[2]=v[indici_scelti[2]];
         }        
