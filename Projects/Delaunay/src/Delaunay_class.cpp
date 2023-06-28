@@ -80,13 +80,13 @@ namespace ProjectLibrary
                "," + to_string(_lati[2]);
     }
 
-    array<unsigned int, 2> Mesh::DentroMesh(const Punto& p)
+    unsigned int Mesh::DentroMesh(const Punto& p, Posizione& DM)
     {
         // 0:interno        1:bordo interno
         // 2:bordo hull     3:esterno
 
         unsigned int counter = 0;
-        array<unsigned int, 2> result = {0,0};// {tipo, id lati o triangoli}
+        unsigned int result = 0;// {tipo, id lati o triangoli}
         // ricerca esterno/interno
         unsigned int pointer = _hullBeginLato;
         bool inizio = true; // variabile per non uscire alla prima iteraz.
@@ -97,22 +97,18 @@ namespace ProjectLibrary
             v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
             v2 = p - _listaLati[pointer]._p1;
             if(abs(crossProduct(v2,v1))<Punto::geometricTol){
-                result[0]= 2;
-                result[1]= pointer;
+                DM = Posizione::HULL;
+                result = pointer;
                 return result;
             }
             else if (crossProduct(v2,v1)>0){
-                result[0]=3;
+                DM = Posizione::ESTERNO;
                 return result;
             }
             pointer = _listaLati[pointer]._succ;
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
-        double m1x;
-        double M1x;
-        double m1y;
-        double M1y;
         for( unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
         {
             counter = 0;
@@ -130,25 +126,25 @@ namespace ProjectLibrary
                {
                    for(unsigned int j = 0; j<3;j++) // j cicla sui lati, cerco il lato dove ho il punto
                    {
-                       m1x = min(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) - Punto::geometricTol;
-                       M1x = max(_listaLati[idLati[j]]._p1._x,_listaLati[idLati[(j+1)%3]]._p2._x) + Punto::geometricTol;
-                       m1y = min(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) - Punto::geometricTol;
-                       M1y = max(_listaLati[idLati[j]]._p1._y,_listaLati[idLati[(j+1)%3]]._p2._y) + Punto::geometricTol;
-                       if((p._x >= m1x)  && (p._y >= m1y) && (p._x <= M1x)  && (p._y <= M1y)){
-                           result[0]=1;
-                           result[1]=idLati[j];// gli passo l'id del triangolo
+                       if((_listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[(i+1)%3]] &&
+                                _listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[i]])||
+                          (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
+                                _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]]))
+                       {
+                            DM = Posizione::LATO_NON_FRONTIERA;
+                            result = idLati[j];// gli passo l'id del triangolo
                            return result;
                        }
                    }
                }
-               else if (crossProduct(v2,v1)<0 )
+               else if (crossProduct(v2,v1)<0)
                {
-                   counter ++;
-                   if (counter==3){
-                       result[0]=0;
-                       result[1]=idCorr;
+                    counter++;
+                    if(counter==3) {
+                       DM = Posizione::INTERNO;
+                       result = idCorr;
                        return result;
-                   }
+                    }
                }
             }
 
@@ -774,26 +770,27 @@ namespace ProjectLibrary
 
         unsigned int idlato = 3;
         unsigned int idtriang = 1;
-        array<unsigned int, 2> DM;
+        unsigned int id_result;
+        Posizione DM;
         Punto po;        
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
             po = _listaPunti[i];
             if (!(po._inserito)){
-                DM = this->DentroMesh(po);
-                switch (DM[0]) {
-                    case 0: {//punto interno
-                        this->PuntoInterno(po, DM[1], idtriang, idlato);
+                id_result = this->DentroMesh(po, DM);
+                switch (DM) {
+                    case Posizione::INTERNO: {
+                        this->PuntoInterno(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case 1: {//sul bordo del triangolo
-                        this->PuntoBordoTriang(po, DM[1], idtriang, idlato);
+                    case Posizione::LATO_NON_FRONTIERA: {//sul bordo del triangolo
+                        this->PuntoBordoTriang(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case 2: { //bordo hull
-                        this->PuntoBordoHull(po, DM[1], idtriang, idlato);
+                    case Posizione::HULL: { //bordo hull
+                        this->PuntoBordoHull(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case 3: {//esterno
+                    case Posizione::ESTERNO: {//esterno
                         this->CollegaSenzaIntersezioni(po, idtriang, idlato);
                         break;
                     }

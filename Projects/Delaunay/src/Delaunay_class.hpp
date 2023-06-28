@@ -18,6 +18,14 @@ namespace ProjectLibrary
       return x > y ? x : y;
     }
 
+    enum struct Posizione: int
+    {
+        INTERNO = 'I',
+        LATO_NON_FRONTIERA = 'L',
+        HULL = 'H',
+        ESTERNO = 'E',
+    };
+
     class Punto
     {
     public:
@@ -132,7 +140,7 @@ namespace ProjectLibrary
         void ControlloDelaunay();
         void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l);
         bool accettabile(const Punto& pnew, const Punto& v);
-        array<unsigned int, 2> DentroMesh(const Punto& p);
+        unsigned int DentroMesh(const Punto& p, Posizione& DM);
         void PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt);
         void PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
         void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);

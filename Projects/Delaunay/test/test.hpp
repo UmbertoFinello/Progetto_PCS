@@ -59,7 +59,7 @@ public:
     list<array<unsigned int,2>>& CD(){return _codaDelaunay;}
     MeshTest(){}
     void ControlloDelaunay(){Mesh::ControlloDelaunay();}
-    array<unsigned int, 2> DentroMesh(const Punto& p) {return Mesh::DentroMesh(p);}
+    unsigned int DentroMesh(const Punto& p, Posizione& DM) {return Mesh::DentroMesh(p, DM);}
     void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l){
         Mesh::CollegaSenzaIntersezioni(p, id_t, id_l);
     }
@@ -710,10 +710,12 @@ TEST(TestClassMesh, TestDentroMesh_primo_interno)
     mesh.LTR()  = { t1,t2,t3,t4 };
     mesh.HB() = idl1;
 
-    array<unsigned int, 2> esito = mesh.DentroMesh(p6);
-    string vero = to_string(0) + " " + to_string(0);
-    string result = to_string(esito[0]) + " " + to_string(esito[1]);
+    Posizione DM;
+    unsigned int esito = mesh.DentroMesh(p6, DM);
+    string vero = to_string(0);
+    string result = to_string(esito);
     EXPECT_EQ(vero, result);
+    EXPECT_EQ(Posizione::INTERNO, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_brodo_non_hull)
@@ -802,10 +804,12 @@ TEST(TestClassMesh, TestDentroMesh_brodo_non_hull)
     mesh.LTR()  = { t1,t2,t3,t4 };
     mesh.HB() = idl1;
     //test2: dentro bordo interno
-    array<unsigned int, 2> esito = mesh.DentroMesh(p6);
-    string vero = to_string(1) + " " + to_string(4);
-    string result = to_string(esito[0]) + " " + to_string(esito[1]);
+    Posizione DM;
+    unsigned int esito = mesh.DentroMesh(p6, DM);
+    string vero = to_string(4);
+    string result = to_string(esito);
     EXPECT_EQ(vero, result);
+    EXPECT_EQ(Posizione::LATO_NON_FRONTIERA, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_bordo_hull)
@@ -894,10 +898,12 @@ TEST(TestClassMesh, TestDentroMesh_bordo_hull)
     mesh.LTR()  = { t1,t2,t3,t4 };
     mesh.HB() = idl1;
 
-    array<unsigned int, 2> esito = mesh.DentroMesh(p6);
-    string vero = to_string(2) + " " + to_string(2);
-    string result = to_string(esito[0]) + " " + to_string(esito[1]);
+    Posizione DM;
+    unsigned int esito = mesh.DentroMesh(p6, DM);
+    string vero = to_string(2);
+    string result = to_string(esito);
     EXPECT_EQ(vero, result);
+    EXPECT_EQ(Posizione::HULL, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_esterno)
@@ -986,10 +992,12 @@ TEST(TestClassMesh, TestDentroMesh_esterno)
     mesh.LTR()  = { t1,t2,t3,t4 };
     mesh.HB() = idl1;
 
-    array<unsigned int, 2> esito = mesh.DentroMesh(p6);
-    string vero = to_string(3) + " " + to_string(0);
-    string result = to_string(esito[0]) + " " + to_string(esito[1]);
+    Posizione DM;
+    unsigned int esito = mesh.DentroMesh(p6, DM);
+    string vero = to_string(0);
+    string result = to_string(esito);
     EXPECT_EQ(vero, result);
+    EXPECT_EQ(Posizione::ESTERNO, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_interno_generico)
@@ -1078,10 +1086,12 @@ TEST(TestClassMesh, TestDentroMesh_interno_generico)
     mesh.LTR()  = { t1,t2,t3,t4 };
     mesh.HB() = idl1;
 
-    array<unsigned int, 2> esito = mesh.DentroMesh(p6);
-    string vero = to_string(0) + " " + to_string(2);
-    string result = to_string(esito[0]) + " " + to_string(esito[1]);
+    Posizione DM;
+    unsigned int esito = mesh.DentroMesh(p6, DM);
+    string vero = to_string(2);
+    string result = to_string(esito);
     EXPECT_EQ(vero, result);
+    EXPECT_EQ(Posizione::INTERNO, DM);
 }
 
 // Collega Senza Intersezioni
