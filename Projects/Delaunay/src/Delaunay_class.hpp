@@ -128,6 +128,7 @@ namespace ProjectLibrary
         unsigned int _hullBeginLato = 0;
         list<array<unsigned int,2>> _codaDelaunay;
     protected:
+        void PrimoTriangolo();
         void ControlloDelaunay();
         void CollegaSenzaIntersezioni(const Punto& p, unsigned int& id_t, unsigned int& id_l);
         bool accettabile(const Punto& pnew, const Punto& v);

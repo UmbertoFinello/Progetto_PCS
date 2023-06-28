@@ -259,14 +259,12 @@ namespace ProjectLibrary
     {
         unsigned int counter = 0;
         unsigned int ilato = _hullBeginLato;
-        unsigned int latoCoincidente = 0;
         bool inizio = true;
         Punto dir1 = newpoint - point;
-        double dir1Rap = dir1._y/dir1._x;
-        unsigned int iv = 0; // variabile da passare perchè il costruttore è costante, tanto non ci interessa l'id di questo punto
+        unsigned int iv = 0;// variabile da passare perchè il costruttore è costante, tanto non ci interessa l'id di questo punto
+        double alfa;
         double x_pt;
         double y_pt;
-        double dir2Rap;
         double m1x;  //variabili che uso per far si che la soluzione
         double m2x;  //del sistema appartnìenga al segmento
         double M1x;  // 1,2: relativo a dir 1,2
@@ -276,17 +274,19 @@ namespace ProjectLibrary
         double M1y;  // 1,2: relativo a dir 1,2
         double M2y;
         Punto dir2;
+        Punto dir3;
         while((_hullBeginLato != ilato) || inizio)
         {
             inizio = false;
             // ricontrollare per l'antisimmetria del prodotto scalare
             dir2 = _listaLati[ilato]._p1 - _listaLati[ilato]._p2;
+            dir3 = _listaLati[ilato]._p2 - point;
             if(abs(crossProduct(dir1,dir2)) > Punto::geometricTol)
             {
                 // pt è la slz del sistema lineare
-                dir2Rap = dir2._y/dir2._x;
-                x_pt = (-point._y +_listaLati[ilato]._p2._y +(dir1Rap*point._x) - (dir2Rap*_listaLati[ilato]._p2._x) )/(dir1Rap-dir2Rap);
-                y_pt = dir2Rap*(x_pt -_listaLati[ilato]._p2._x) + _listaLati[ilato]._p2._y;
+                alfa = (-dir2._y*dir3._x + dir2._x*dir3._y)/(dir1._y*dir2._x - dir1._x*dir2._y);
+                x_pt = point._x + alfa*dir1._x;
+                y_pt = point._y + alfa*dir1._y;
                 Punto pt = Punto(iv, x_pt, y_pt);
                 m1x = min(newpoint._x,(point)._x) - Punto::geometricTol;
                 M1x = max(newpoint._x,(point)._x) + Punto::geometricTol;
@@ -294,10 +294,10 @@ namespace ProjectLibrary
                 M1y = max(newpoint._y,(point)._y) + Punto::geometricTol;
                 m2x = min((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x) - Punto::geometricTol;
                 M2x = max((_listaLati[ilato]._p1)._x,(_listaLati[ilato]._p2)._x) + Punto::geometricTol;
-                m2y = min((_listaLati[ilato ]._p1)._y,(_listaLati[ilato]._p2)._y) - Punto::geometricTol;
+                m2y = min((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y) - Punto::geometricTol;
                 M2y = max((_listaLati[ilato]._p1)._y,(_listaLati[ilato]._p2)._y) + Punto::geometricTol;
-                if(  (pt._x >= m1x) && (pt._x >= m2x) && (pt._y >= m1y) && (pt._y >= m2y) &&
-                     (pt._x <= M1x) && (pt._x <= M2x) && (pt._y <= M1y) && (pt._y <= M2y)    )
+                if((pt._x >= m1x) && (pt._x >= m2x) && (pt._y >= m1y) && (pt._y >= m2y) &&
+                   (pt._x <= M1x) && (pt._x <= M2x) && (pt._y <= M1y) && (pt._y <= M2y))
                 {
                     if(pt == _listaLati[ilato]._p1 || pt == _listaLati[ilato]._p2)
                     {
@@ -315,25 +315,14 @@ namespace ProjectLibrary
             // newpoint non può appartenere al lato, ma se ho paralleli coincidenti ho sicuramente point
             // uguale ad uno dei due lati che sto considerando
             }
-            else if(_listaLati[ilato]._p1._id == point._id || _listaLati[ilato]._p2._id == point._id)
+            else if(_listaLati[ilato]._p1 == point || _listaLati[ilato]._p2 == point)
             {
-                if(_listaLati[ilato]._p2._id == point._id)
-                { // il punto p2 sta "dopo" p1 e siccome i due vettori cono paralleli coincidenti no va bene
+                double min_dist = min(Norm(newpoint._x-_listaLati[ilato]._p1._x, newpoint._y-_listaLati[ilato]._p1._y),
+                                      Norm(newpoint._x-_listaLati[ilato]._p2._x, newpoint._y-_listaLati[ilato]._p2._y));
+                double d = Norm(newpoint._x-point._x, newpoint._y-point._y);
+
+                if(abs(min_dist - d) >= Punto::geometricTol*max(min_dist,d))
                     return false;
-                }
-                else
-                {
-                    latoCoincidente = _listaLati[ilato]._prec;
-                    dir2 = _listaLati[latoCoincidente]._p1 - _listaLati[latoCoincidente]._p2;
-                    if(abs(crossProduct(dir1,dir2)) < Punto::geometricTol)
-                    {   // se prendo il lato precedente, avrà sicuramente un punto in comune e quindi
-                        // non devo controllare se sono paralleli non coincidenti
-                        return false;
-                    }else
-                    {
-                        return true;
-                    }
-                }
             }
             ilato = _listaLati[ilato]._succ;
         }
@@ -352,6 +341,7 @@ namespace ProjectLibrary
         Punto paus;
         if(accettabile(nuovoPunto, _listaLati[fineLato]._p1))
         {
+            cambiaInizio = true;
             while(b)
             {
                 fineLato = _listaLati[fineLato]._succ;
@@ -359,16 +349,15 @@ namespace ProjectLibrary
             }
             // in v abbiamo l'utimo false, il prec del puntato di finePunto sarà l'ultimo accettabile
             fineLato = _listaLati[fineLato]._prec;
-            if(accettabile(nuovoPunto,_listaLati[fineLato]._p1))
-            {
-                cambiaInizio = true;
+            if(accettabile(nuovoPunto,_listaLati[inizioLato]._p1))
+            {                
                 b = true;
                 while(b)
                 {
                     inizioLato = _listaLati[inizioLato]._prec;
                     b = accettabile(nuovoPunto, _listaLati[inizioLato]._p1);
                 }
-                // in q abbiamo il primo false, il succ del puntato di q sarà il primo accettabile
+                // in b abbiamo il primo false, il succ del puntato di b sarà il primo accettabile
                 inizioLato = _listaLati[inizioLato]._succ;
             }
             else
@@ -697,18 +686,17 @@ namespace ProjectLibrary
         _listaLati[lat._succ]._prec = l3._id;
     }
 
-    Mesh::Mesh(const vector<Punto>& listaPunti):
-        _listaPunti(listaPunti)
+    void Mesh::PrimoTriangolo()
     {
         // aggiungere inizializzazione di esterni
-        unsigned int idlato = 0;
-        unsigned int idtriang = 0;
-        unsigned int n = listaPunti.size() - 1;
-        vector<Punto> vx = listaPunti;
-        bool ax = true;        
+        unsigned int id_lt = 0;
+        unsigned int id_tr = 0;
+        unsigned int n = _listaPunti.size() - 1;
+        vector<Punto> vx = _listaPunti;
+        bool ax = true;
         SortLibrary::MergeSort(vx, 0, n, ax);
         ax = false;
-        vector<Punto> vy = listaPunti;
+        vector<Punto> vy = _listaPunti;
         SortLibrary::MergeSort(vy, 0, n, ax);
 
         array<Punto, 4> v = {vx[0], vx[n], vy[0], vy[n]};
@@ -735,7 +723,7 @@ namespace ProjectLibrary
             for (unsigned int i = 0; i< 4;i++)
             {
                 Area = 0.5*abs ((v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
-                                (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x));
+                                 (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x));
                 if (abs(AreaMax - Area) < Punto::geometricTol_Squared*max(AreaMax,Area))
                 {
                     AreaMax = Area;
@@ -748,10 +736,10 @@ namespace ProjectLibrary
             punti_scelti[0]= v[indici_scelti[0]];
             punti_scelti[1]= v[indici_scelti[1]];
             punti_scelti[2]= v[indici_scelti[2]];
-        }        
+        }
         double Area = ((punti_scelti[0]._x*punti_scelti[1]._y) + (punti_scelti[0]._y*punti_scelti[2]._x)
-                        + (punti_scelti[1]._x*punti_scelti[2]._y) - (punti_scelti[2]._x*punti_scelti[1]._y)
-                        - (punti_scelti[2]._y*punti_scelti[0]._x) - (punti_scelti[1]._x*punti_scelti[0]._y));
+                       + (punti_scelti[1]._x*punti_scelti[2]._y) - (punti_scelti[2]._x*punti_scelti[1]._y)
+                       - (punti_scelti[2]._y*punti_scelti[0]._x) - (punti_scelti[1]._x*punti_scelti[0]._y));
 
         if (Area < Punto::geometricTol)
         {
@@ -764,9 +752,9 @@ namespace ProjectLibrary
         _listaPunti[punti_scelti[2]._id]._inserito = true;
         Lato l;
         for(unsigned int i = 0; i<3; i++){
-            l = Lato(idlato, punti_scelti[i], punti_scelti[(i+1)%3], idtriang);
+            l = Lato(id_lt, punti_scelti[i], punti_scelti[(i+1)%3], id_tr);
             _listaLati.push_back(l);
-            idlato++;
+            id_lt++;
         }
         _listaLati[0]._prec = 2;
         _listaLati[1]._prec = 0;
@@ -774,11 +762,18 @@ namespace ProjectLibrary
         _listaLati[0]._succ = 1;
         _listaLati[1]._succ = 2;
         _listaLati[2]._succ = 0;
-        Triangolo tr = Triangolo(idtriang, punti_scelti[0]._id , punti_scelti[1]._id, punti_scelti[2]._id,
+        Triangolo tr = Triangolo(id_tr, punti_scelti[0]._id , punti_scelti[1]._id, punti_scelti[2]._id,
                                  _listaLati[0]._id, _listaLati[1]._id, _listaLati[2]._id);
-        idtriang++;
         _listaTriangoli.push_back(tr);
+    }
 
+    Mesh::Mesh(const vector<Punto>& listaPunti):
+        _listaPunti(listaPunti)
+    {
+        this->PrimoTriangolo();
+
+        unsigned int idlato = 3;
+        unsigned int idtriang = 1;
         array<unsigned int, 2> DM;
         Punto po;        
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
