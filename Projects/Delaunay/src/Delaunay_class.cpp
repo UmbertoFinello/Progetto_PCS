@@ -82,6 +82,10 @@ namespace ProjectLibrary
 
     unsigned int Mesh::DentroMesh(const Punto& p, Posizione& DM)
     {
+        double mx;
+        double Mx;
+        double my;
+        double My;
         unsigned int counter = 0;
         unsigned int result = 0;// {tipo, id lati o triangoli}
         // ricerca esterno/interno
@@ -106,14 +110,14 @@ namespace ProjectLibrary
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
-        for( unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
+        for(unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
         {
             counter = 0;
             idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
             idLati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
             // verifico che il punto sia interno al triangolo considerato _A_
 
-            for(unsigned int i = 0; i<3;i++)
+            for(unsigned int i = 0; i<3; i++)
             {
                // passo dai punti perchè non ho la certezza che i lati siano ordinati
                // bene per fareil prodotto vettoriale
@@ -121,12 +125,17 @@ namespace ProjectLibrary
                v2 = p - _listaPunti[idPunti[i]];
                if(abs(crossProduct(v2,v1))<Punto::geometricTol)
                {
-                   for(unsigned int j = 0; j<3;j++) // j cicla sui lati, cerco il lato dove ho il punto
+                   for(unsigned int j = 0; j<3; j++) // j cicla sui lati, cerco il lato dove ho il punto
                    {
-                       if((_listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[(i+1)%3]] &&
-                                _listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[i]])||
-                          (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
-                                _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]]))
+                       mx = min((_listaLati[idLati[j]]._p1)._x,(_listaLati[idLati[j]]._p2)._x) - Punto::geometricTol;
+                       Mx = max((_listaLati[idLati[j]]._p1)._x,(_listaLati[idLati[j]]._p2)._x) + Punto::geometricTol;
+                       my = min((_listaLati[idLati[j]]._p1)._y,(_listaLati[idLati[j]]._p2)._y) - Punto::geometricTol;
+                       My = max((_listaLati[idLati[j]]._p1)._y,(_listaLati[idLati[j]]._p2)._y) + Punto::geometricTol;
+                       if((p._x > mx) && (p._y > my) && (p._x < Mx) && (p._y < My) &&
+                           ((_listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[(i+1)%3]] &&
+                              _listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[i]])||
+                            (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
+                              _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]])))
                        {
                             DM = Posizione::LATO_NON_FRONTIERA;
                             result = idLati[j];// gli passo l'id del triangolo
@@ -442,12 +451,12 @@ namespace ProjectLibrary
     {
         array<unsigned int, 2> il_it;
         Triangolo tr =  _listaTriangoli[itr];
-        Lato l1 = Lato(id_lt, po, _listaLati[(tr._lati)[0]]._p1, itr);
+        Lato l1 = Lato(id_lt, po, _listaPunti[(tr._vertici)[0]], itr);
         unsigned int idl1 = id_lt;
         _listaLati.push_back(l1);
         id_lt++;
 
-        Lato l2 = Lato(id_lt, _listaLati[(tr._lati)[0]]._p2, po, itr);
+        Lato l2 = Lato(id_lt, _listaPunti[(tr._vertici)[1]], po, itr);
         unsigned int idl2 = id_lt;
         _listaLati.push_back(l2);
         id_lt++;
@@ -459,7 +468,7 @@ namespace ProjectLibrary
             _codaDelaunay.push_back(il_it);
         }
 
-        Lato l3 = Lato(id_lt, _listaLati[(tr._lati)[1]]._p2, po, id_tr);
+        Lato l3 = Lato(id_lt, _listaPunti[(tr._vertici)[2]], po, id_tr);
         unsigned int idl3 = id_lt;
         _listaLati.push_back(l3);
         id_lt++;
@@ -780,11 +789,11 @@ namespace ProjectLibrary
                         this->PuntoBordoTriang(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case Posizione::HULL: { //bordo hull
+                    case Posizione::HULL: {
                         this->PuntoBordoHull(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case Posizione::ESTERNO: {//esterno
+                    case Posizione::ESTERNO: {
                         this->CollegaSenzaIntersezioni(po, idtriang, idlato);
                         break;
                     }
@@ -856,11 +865,12 @@ namespace ProjectLibrary
         if (file.fail())
             return false;
 
-        file << "id p1 p2 length\n";
+        file << "id x1 y1 x2 y2 length\n";
 
         for(unsigned int i = 0; i < ((mesh._listaLati).size()-1) ; i++){
-            file << mesh._listaLati[i]._id << " " << mesh._listaLati[i]._p1._id << " "
-                 << mesh._listaLati[i]._p2._id << " " << mesh._listaLati[i]._length << endl;
+            file << to_string(mesh._listaLati[i]._id) << " " << to_string(mesh._listaLati[i]._p1._x) << " " << to_string(mesh._listaLati[i]._p1._y)
+                 << " " << to_string(mesh._listaLati[i]._p2._x) << " " << to_string(mesh._listaLati[i]._p2._y) << " " <<
+                to_string(mesh._listaLati[i]._length) << endl;
         }
         file.close();
 
@@ -869,7 +879,7 @@ namespace ProjectLibrary
         if (file.fail())
             return false;
 
-        file << "id_triangolo p1 p2 p3 l1 l2 l3\n" << endl;
+        file << "id_triangolo p1 p2 p3 l1 l2 l3\n";
 
         for(unsigned int i = 0; i < ((mesh._listaLati).size()-1) ; i++){
             file << mesh._listaTriangoli[i]._id << " ";
@@ -881,7 +891,7 @@ namespace ProjectLibrary
             for (unsigned int j=0; j < 3 ; j++){
                 // faccio questi if perchè non voglio lo spazio a fine della riga
                 if ( j == 2)
-                    file << endl;
+                    file << mesh._listaTriangoli[i]._lati[j]<< endl;
                 else
                     file << mesh._listaTriangoli[i]._lati[j] << " ";
             }
