@@ -97,7 +97,13 @@ namespace ProjectLibrary
             inizio=false;
             v1 = _listaLati[pointer]._p2 - _listaLati[pointer]._p1;
             v2 = p - _listaLati[pointer]._p1;
-            if(abs(crossProduct(v2,v1))<Punto::geometricTol){
+            mx = min(_listaLati[pointer]._p1._x, _listaLati[pointer]._p2._x) - Punto::geometricTol;
+            Mx = max(_listaLati[pointer]._p1._x, _listaLati[pointer]._p2._x) + Punto::geometricTol;
+            my = min(_listaLati[pointer]._p1._y, _listaLati[pointer]._p2._y) - Punto::geometricTol;
+            My = max(_listaLati[pointer]._p1._y, _listaLati[pointer]._p2._y) + Punto::geometricTol;
+            if(abs(crossProduct(v2,v1))<Punto::geometricTol && (p._x > mx) && (p._y > my) && (p._x < Mx)
+                && (p._y < My))
+            {
                 DM = Posizione::HULL;
                 result = pointer;
                 return result;
@@ -123,19 +129,20 @@ namespace ProjectLibrary
                // bene per fareil prodotto vettoriale
                v1 = _listaPunti[idPunti[(i+1)%3]]-_listaPunti[idPunti[i]];
                v2 = p - _listaPunti[idPunti[i]];
-               if(abs(crossProduct(v2,v1))<Punto::geometricTol)
+               mx = min(_listaPunti[idPunti[i]]._x, _listaPunti[idPunti[(i+1)%3]]._x) - Punto::geometricTol;
+               Mx = max(_listaPunti[idPunti[i]]._x, _listaPunti[idPunti[(i+1)%3]]._x) + Punto::geometricTol;
+               my = min(_listaPunti[idPunti[i]]._y, _listaPunti[idPunti[(i+1)%3]]._y) - Punto::geometricTol;
+               My = max(_listaPunti[idPunti[i]]._y, _listaPunti[idPunti[(i+1)%3]]._y) + Punto::geometricTol;
+               if(abs(crossProduct(v2,v1))<Punto::geometricTol && (p._x > mx) && (p._y > my) && (p._x < Mx)
+                   && (p._y < My))
                {
                    for(unsigned int j = 0; j<3; j++) // j cicla sui lati, cerco il lato dove ho il punto
                    {
-                       mx = min((_listaLati[idLati[j]]._p1)._x,(_listaLati[idLati[j]]._p2)._x) - Punto::geometricTol;
-                       Mx = max((_listaLati[idLati[j]]._p1)._x,(_listaLati[idLati[j]]._p2)._x) + Punto::geometricTol;
-                       my = min((_listaLati[idLati[j]]._p1)._y,(_listaLati[idLati[j]]._p2)._y) - Punto::geometricTol;
-                       My = max((_listaLati[idLati[j]]._p1)._y,(_listaLati[idLati[j]]._p2)._y) + Punto::geometricTol;
-                       if((p._x > mx) && (p._y > my) && (p._x < Mx) && (p._y < My) &&
-                           ((_listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[(i+1)%3]] &&
+
+                       if((_listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[(i+1)%3]] &&
                               _listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[i]])||
-                            (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
-                              _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]])))
+                          (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
+                              _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]]))
                        {
                             DM = Posizione::LATO_NON_FRONTIERA;
                             result = idLati[j];// gli passo l'id del triangolo
