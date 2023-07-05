@@ -116,7 +116,7 @@ namespace ProjectLibrary
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
-        for(unsigned int idCorr = 0; idCorr < (_listaTriangoli.size() -1); idCorr++)
+        for(unsigned int idCorr = 0; idCorr <_listaTriangoli.size(); idCorr++)
         {
             counter = 0;
             idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
@@ -719,18 +719,20 @@ namespace ProjectLibrary
             punti_scelti[1]=v[1];
             punti_scelti[2]=v[3];
         } else {
-            if ((v[0] == v[3]) && (v[2] == v[1])){
-                v[0]= vx[1];
-                v[2]= vy[1];
+            unsigned int k = 1;
+            while((v[0] == v[3]) && (v[2] == v[1])){
+                v[0]= vx[k];
+                v[2]= vy[k];
+                k++;
             }
             double AreaMax = 0;
             double Area = 0;
             array<unsigned int,3> indici_scelti = {0,0,0};
             for (unsigned int i = 0; i< 4;i++)
             {
-                Area = 0.5*abs ((v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
+                Area = 0.5* abs((v[(i+1)%4]._x - v[i]._x)*(v[(i+2)%4]._y - v[i]._y) -
                                  (v[(i+1)%4]._y - v[i]._y)*(v[(i+2)%4]._x - v[i]._x));
-                if (abs(AreaMax - Area) < Punto::geometricTol_Squared*max(AreaMax,Area))
+                if (abs(AreaMax - Area) > Punto::geometricTol_Squared*max(AreaMax,Area))
                 {
                     AreaMax = Area;
                     for (unsigned int j = 0; j<3;j++)
@@ -874,7 +876,7 @@ namespace ProjectLibrary
 
         file << "id x1 y1 x2 y2 length\n";
 
-        for(unsigned int i = 0; i < ((mesh._listaLati).size()-1) ; i++){
+        for(unsigned int i = 0; i <(mesh._listaLati).size(); i++){
             file << to_string(mesh._listaLati[i]._id) << " " << to_string(mesh._listaLati[i]._p1._x) << " " << to_string(mesh._listaLati[i]._p1._y)
                  << " " << to_string(mesh._listaLati[i]._p2._x) << " " << to_string(mesh._listaLati[i]._p2._y) << " " <<
                 to_string(mesh._listaLati[i]._length) << endl;
@@ -888,7 +890,7 @@ namespace ProjectLibrary
 
         file << "id_triangolo p1 p2 p3 l1 l2 l3\n";
 
-        for(unsigned int i = 0; i < ((mesh._listaLati).size()-1) ; i++){
+        for(unsigned int i = 0; i < (mesh._listaTriangoli).size(); i++){
             file << mesh._listaTriangoli[i]._id << " ";
 
             for (unsigned int j=0; j < 3 ; j++){
