@@ -1,7 +1,6 @@
 #ifndef __DELAUNAY_H
 #define __DELAUNAY_H
 
-
 #include "Eigen/Eigen"
 #include <iostream>
 #include <cmath>

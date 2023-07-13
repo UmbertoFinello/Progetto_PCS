@@ -73,6 +73,20 @@ public:
     string Show(){return Mesh::Show();}
 };
 
+TEST(TestClassIOMesh, TestImportPunti)
+{
+    IOMesh msh;
+    vector<Punto> lst_pt;
+    string NomeFile = "../Delaunay/Dataset/TestImportPunti.csv";
+    msh.ImportPunti(lst_pt, NomeFile);
+    string punti;
+    for(unsigned int k=0; k<lst_pt.size(); k++){
+        punti = punti + to_string(lst_pt[k]._id)+ " " + to_string(lst_pt[k]._x) + " " + to_string(lst_pt[k]._y)+ "\n";
+    }
+    string right = "0 0.386290 0.604883\n1 0.513084 0.628267\n2 0.597176 0.756016\n3 0.420698 0.773757\n";
+    EXPECT_EQ(right, punti);
+}
+
 TEST(TestClassPunto, TestPuntoConstructor)
 {
     unsigned int id = 4;
