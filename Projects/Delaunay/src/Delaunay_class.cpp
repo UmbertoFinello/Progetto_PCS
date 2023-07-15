@@ -54,7 +54,6 @@ namespace ProjectLibrary
         double cosenoAngolo = (pow((lst_lat[_lati[l1]])._length, 2) + pow(lst_lat[_lati[l2]]._length,2) - (segm._length * segm._length))
                                 / (2 * lst_lat[_lati[l1]]._length * lst_lat[_lati[l2]]._length);
         double angoloRad = acos(cosenoAngolo);
-        // double angoloDeg = angoloRad * 180.0 / M_PI;
         return angoloRad;
     }
 
@@ -116,7 +115,20 @@ namespace ProjectLibrary
         }
         array <unsigned int, 3> idPunti;
         array <unsigned int, 3> idLati;
-        for(unsigned int idCorr = 0; idCorr <_listaTriangoli.size(); idCorr++)
+        bool entra = true;
+        bool per_tr;
+        unsigned int latcor = _hullBeginLato;
+        unsigned int idCorr = (_listaLati[_hullBeginLato]._listIdTr)[0];
+        array<unsigned int, 2> lat;
+        array<double, 2> ang;
+        array<Punto, 2> pr;
+        unsigned int ind;
+        array<double, 2> dist;
+        double aus;
+        double x_pr;
+        double y_pr;
+        unsigned int ip = 0;
+        while(entra)
         {
             counter = 0;
             idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
@@ -160,6 +172,82 @@ namespace ProjectLibrary
                     }
                }
             }
+            per_tr = true;
+            for(unsigned int k = 0; k<3; k++){
+                if(_listaLati[idLati[k]]._id != latcor && _listaLati[idLati[k]]._listIdTr.size() == 1){
+                    if(_listaLati[idLati[(k+1)%3]]._id == latcor)
+                       latcor = idLati[(k+2)%3];
+                    else
+                       latcor = idLati[(k+1)%3];
+
+                    if((_listaLati[latcor]._listIdTr)[0] == idCorr)
+                       idCorr = (_listaLati[latcor]._listIdTr)[1];
+                    else
+                       idCorr = (_listaLati[latcor]._listIdTr)[0];
+
+                    per_tr = false;
+                    break;
+                }
+            }
+            ind = 0;
+            if(per_tr){
+                for(unsigned int k = 0; k<3; k++){
+                    if(_listaLati[idLati[k]]._id != latcor){
+                        lat[ind] = idLati[k];
+                        if(abs(_listaLati[lat[ind]]._p1._x-_listaLati[lat[ind]]._p2._x) <
+                           Punto::geometricTol*max(_listaLati[lat[ind]]._p1._x, _listaLati[lat[ind]]._p2._x))
+                        {
+                            x_pr = _listaLati[lat[ind]]._p1._x;
+                            y_pr = p._y;
+                        } else {
+                            aus = -(_listaLati[lat[ind]]._p1-_listaLati[lat[ind]]._p2)._y/
+                                   (_listaLati[lat[ind]]._p1-_listaLati[lat[ind]]._p2)._x;
+                            x_pr = (p._x-(aus*(p._y-_listaLati[lat[ind]]._p1._y - aus* _listaLati[lat[ind]]._p1._x)))/
+                                   (pow(aus, 2) + 1);
+                            y_pr = -aus*(x_pr-_listaLati[lat[ind]]._p1._x) + _listaLati[lat[ind]]._p1._y;
+                        }
+                        pr[ind] = Punto(ip, x_pr, y_pr);
+                        mx = min(_listaLati[lat[ind]]._p1._x, _listaLati[lat[ind]]._p2._x) - Punto::geometricTol;
+                        Mx = max(_listaLati[lat[ind]]._p1._x, _listaLati[lat[ind]]._p2._x) + Punto::geometricTol;
+                        my = min(_listaLati[lat[ind]]._p1._y, _listaLati[lat[ind]]._p2._y) - Punto::geometricTol;
+                        My = max(_listaLati[lat[ind]]._p1._y, _listaLati[lat[ind]]._p2._y) + Punto::geometricTol;
+                        if(!((pr[ind]._x > mx) && (pr[ind]._y > my) && (pr[ind]._x < Mx) && (pr[ind]._y < My))){
+                            dist[0] = Norm((p-_listaLati[lat[ind]]._p1)._x, (p-_listaLati[lat[ind]]._p1)._y);
+                            dist[1] = Norm((p-_listaLati[lat[ind]]._p2)._x, (p-_listaLati[lat[ind]]._p2)._y);
+                            if(dist[0] - dist[1] < Punto::geometricTol)
+                               pr[ind] = _listaLati[lat[ind]]._p1;
+                            else
+                               pr[ind] = _listaLati[lat[ind]]._p2;
+                        }
+                        ind++;
+                    }
+                }
+                if(pr[0] == pr[1]){
+                    ang[0] = asin(abs(crossProduct(pr[0]-p, _listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2))/
+                             (Norm((pr[0]-p)._x,(pr[0]-p)._y)*Norm((_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._x,
+                                                                   (_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._y)));
+                    ang[1] = asin(abs(crossProduct(pr[1]-p, _listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2))/
+                             (Norm((pr[1]-p)._x,(pr[1]-p)._y)*Norm((_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._x,
+                                                                   (_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._y)));
+                    if(ang[0] < ang[1])
+                       latcor = lat[0];
+                    else
+                       latcor = lat[1];
+                } else {
+                    dist[0] = Norm((p-pr[0])._x, (p-pr[0])._y);
+                    dist[1] = Norm((p-pr[1])._x, (p-pr[1])._y);
+                    if(dist[0]<dist[1])
+                       latcor = lat[0];
+                    else
+                        latcor = lat[1];
+
+                }
+                if((_listaLati[latcor]._listIdTr)[0] == idCorr)
+                    idCorr = (_listaLati[latcor]._listIdTr)[1];
+                else
+                    idCorr = (_listaLati[latcor]._listIdTr)[0];
+            }
+
         }
         return result;
     }
