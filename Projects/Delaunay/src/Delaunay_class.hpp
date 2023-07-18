@@ -83,6 +83,8 @@ namespace ProjectLibrary
       return (p1._x * p2._y - p1._y * p2._x);
     }
 
+    bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
+
     class Lato
     {
     friend class Triangolo;
@@ -142,20 +144,14 @@ namespace ProjectLibrary
         unsigned int DentroMesh(const Punto& p, Posizione& DM);
         void PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt);
         void PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
-        void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
+        void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);        
     public:
         Mesh(const vector<Punto>& listaPunti);
         Mesh(){}
         string Show();
+        bool ExportMesh(const string& OutFilePath, const string& OutFileNameParz);
     };
 
-    class IOMesh
-    {
-        public:
-            IOMesh(){}
-            bool ImportPunti(vector<Punto>& listaPunti, const string& FileName);
-            bool ExportMesh(const Mesh& mesh, const string& OutFilePath, const string& OutFileNameParz);
-    };
 }
 
 #endif // __DELAUNAY_H

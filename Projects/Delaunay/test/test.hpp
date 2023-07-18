@@ -73,12 +73,11 @@ public:
     string Show(){return Mesh::Show();}
 };
 
-TEST(TestClassIOMesh, TestImportPunti)
+TEST(TestImportPunti, TestImportPunti)
 {
-    IOMesh msh;
     vector<Punto> lst_pt;
     string NomeFile = "../Delaunay/Dataset/TestImportPunti.csv";
-    msh.ImportPunti(lst_pt, NomeFile);
+    ImportPunti(lst_pt, NomeFile);
     string punti;
     for(unsigned int k=0; k<lst_pt.size(); k++){
         punti = punti + to_string(lst_pt[k]._id)+ " " + to_string(lst_pt[k]._x) + " " + to_string(lst_pt[k]._y)+ "\n";
@@ -2116,13 +2115,13 @@ TEST(TestClassMesh, TestCostruttoreMesh)
 
     string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.500000 0.000000\n"
                        "3 3.000000 3.000000\n4 4.000000 2.000000\n5 1.000000 2.000000\nLati\n"
-                       "Id p1 p2 Length TriangoliAdiacenti\n0 5 4 3.000000 2,0\n1 4 3 1.414214 0\n"
-                       "2 5 2 2.061553 3,1\n3 0 2 0.500000 1\n4 1 4 3.605551 2\n5 5 1 2.000000 3,2\n"
-                       "6 2 1 0.500000 3\n7 3 5 2.236068 0\n8 5 0 2.236068 1\nTriangoli\n"
-                       "Id p1 p2 p3 l1 l2 l3\n0 3 5 4 7 0 1\n1 0 2 5 3 2 8\n2 1 4 5 4 0 5\n3 2 1 5 6 5 2\n";
+                       "Id p1 p2 Length TriangoliAdiacenti\n0 3 5 2.236068 0\n1 5 1 2.000000 3,2\n"
+                       "2 4 5 3.000000 3,0\n3 5 0 2.236068 1\n4 0 2 0.500000 1\n5 2 5 2.061553 1,2\n"
+                       "6 2 1 0.500000 2\n7 1 4 3.605551 3\n8 4 3 1.414214 0\nTriangoli\nId p1 p2 p3 l1 l2 l3\n"
+                       "0 3 5 4 0 2 8\n1 0 2 5 4 5 3\n2 2 1 5 6 1 5\n3 1 4 5 7 2 1\n";
     EXPECT_EQ(mh.Show(), vero_mesh);
 
-    string vero_Hull_succ = " 1 7 8 3 6 4 1";
+    string vero_Hull_succ = " 0 3 4 6 7 8 0";
     unsigned int entra = 0;
     unsigned int i = mh.HB();
     string sHull_succ = "";
@@ -2133,7 +2132,7 @@ TEST(TestClassMesh, TestCostruttoreMesh)
         LatoTest a = (mh.LL())[i];
         i = a.Succ();
     }
-    string vero_Hull_prec = " 1 4 6 3 8 7 1";
+    string vero_Hull_prec = " 0 8 7 6 4 3 0";
     entra = 0;
     i = mh.HB();
     string sHull_prec = "";

@@ -4,16 +4,14 @@ using namespace ProjectLibrary;
 
 int main()
 {
-    IOMesh IO = IOMesh();
     vector<Punto> List_punti;
-    string inputfile = "../Delaunay/Dataset/Test2.csv";
-    if(!(IO.ImportPunti(List_punti, inputfile)))
+    string inputfile = "../Delaunay/Dataset/Test1.csv";
+    if(!(ImportPunti(List_punti, inputfile)))
         return -1;
     else{
-        Mesh mesh = Mesh(List_punti);
-        string vedmesh = mesh.Show();
-        cout << vedmesh;
-        if(!(IO.ExportMesh(mesh, "../Delaunay/Result/", "Test2.csv")))
+        Mesh griglia = Mesh(List_punti);
+        cout << griglia.Show();
+        if(!(griglia.ExportMesh("../Delaunay/Result/", "Test1.csv")))
             return -2;
     }
     return 0;
