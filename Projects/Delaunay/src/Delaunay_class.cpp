@@ -742,6 +742,7 @@ namespace ProjectLibrary
             {
                 pnl = (_listaTriangoli[itr]._vertici)[h];
                 pos = h;
+                break;
             }
         }
         Lato l1 = Lato(ilt, _listaLati[ilt]._p1, po, itr);
