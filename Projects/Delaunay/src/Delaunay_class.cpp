@@ -785,17 +785,15 @@ namespace ProjectLibrary
     {
         unsigned int id_lt = 0;
         unsigned int id_tr = 0;
-        double div;
-        double mlt;
+        double som;
+        double men;
         Punto pu;
         vector<Punto> vx = {};
         for(unsigned int i = 0; i<_listaPunti.size(); i++){
-            if(abs(_listaPunti[i]._x) > Punto::geometricTol){
-                div = _listaPunti[i]._y/abs(_listaPunti[i]._x);
-                mlt = _listaPunti[i]._y*abs(_listaPunti[i]._x);
-                pu = Punto(_listaPunti[i]._id, div, mlt);
+                som = _listaPunti[i]._x+_listaPunti[i]._y;
+                men = _listaPunti[i]._x-_listaPunti[i]._y;
+                pu = Punto(_listaPunti[i]._id, som, men);
                 vx.push_back(pu);
-            }
         }
         unsigned int n = vx.size() - 1;
         vector<Punto> vy = vx;
