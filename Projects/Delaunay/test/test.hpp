@@ -822,7 +822,7 @@ TEST(TestClassMesh, TestDentroMesh_brodo_non_hull)
     string vero = to_string(4);
     string result = to_string(esito);
     EXPECT_EQ(vero, result);
-    EXPECT_EQ(Posizione::LATO_NON_FRONTIERA, DM);
+    EXPECT_EQ(Posizione::LATO_DENTRO, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_bordo_hull)
@@ -916,7 +916,7 @@ TEST(TestClassMesh, TestDentroMesh_bordo_hull)
     string vero = to_string(2);
     string result = to_string(esito);
     EXPECT_EQ(vero, result);
-    EXPECT_EQ(Posizione::HULL, DM);
+    EXPECT_EQ(Posizione::BORDO_HULL, DM);
 }
 
 TEST(TestClassMesh, TestDentroMesh_esterno)

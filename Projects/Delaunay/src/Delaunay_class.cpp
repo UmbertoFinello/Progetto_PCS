@@ -103,7 +103,7 @@ namespace ProjectLibrary
             if(abs(crossProduct(v2,v1))<Punto::geometricTol && (p._x > mx) && (p._y > my) && (p._x < Mx)
                 && (p._y < My))
             {
-                DM = Posizione::HULL;
+                DM = Posizione::BORDO_HULL;
                 result = pointer;
                 return result;
             }
@@ -156,7 +156,7 @@ namespace ProjectLibrary
                           (_listaLati[idLati[j]]._p2 ==_listaPunti[idPunti[(i+1)%3]] &&
                               _listaLati[idLati[j]]._p1 ==_listaPunti[idPunti[i]]))
                        {
-                            DM = Posizione::LATO_NON_FRONTIERA;
+                            DM = Posizione::LATO_DENTRO;
                             result = idLati[j];// gli passo l'id del triangolo
                            return result;
                        }
@@ -223,10 +223,12 @@ namespace ProjectLibrary
                     }
                 }
                 if(pr[0] == pr[1]){
-                    ang[0] = asin(abs(crossProduct(pr[0]-p, _listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2))/
+                    ang[0] = acos(((pr[0]-p)._x*(_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._x +
+                                   (pr[0]-p)._y*(_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._y)/
                              (Norm((pr[0]-p)._x,(pr[0]-p)._y)*Norm((_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._x,
                                                                    (_listaLati[lat[0]]._p1-_listaLati[lat[0]]._p2)._y)));
-                    ang[1] = asin(abs(crossProduct(pr[1]-p, _listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2))/
+                    ang[1] = acos(((pr[1]-p)._x*(_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._x +
+                                   (pr[1]-p)._y*(_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._y)/
                              (Norm((pr[1]-p)._x,(pr[1]-p)._y)*Norm((_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._x,
                                                                    (_listaLati[lat[1]]._p1-_listaLati[lat[1]]._p2)._y)));
                     if(ang[0] < ang[1])
@@ -888,11 +890,11 @@ namespace ProjectLibrary
                         this->PuntoInterno(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case Posizione::LATO_NON_FRONTIERA: {//sul bordo del triangolo
+                    case Posizione::LATO_DENTRO: {//sul bordo del triangolo
                         this->PuntoBordoTriang(po, id_result, idtriang, idlato);
                         break;
                     }
-                    case Posizione::HULL: {
+                    case Posizione::BORDO_HULL: {
                         this->PuntoBordoHull(po, id_result, idtriang, idlato);
                         break;
                     }

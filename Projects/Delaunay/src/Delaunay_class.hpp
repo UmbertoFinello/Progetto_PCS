@@ -20,8 +20,8 @@ namespace ProjectLibrary
     enum struct Posizione: char
     {
         INTERNO = 'I',
-        LATO_NON_FRONTIERA = 'L',
-        HULL = 'H',
+        LATO_DENTRO = 'L',
+        BORDO_HULL = 'H',
         ESTERNO = 'E',
     };
 
@@ -129,7 +129,6 @@ namespace ProjectLibrary
 
     class Mesh
     {
-    friend class IOMesh;
     protected:
         vector<Triangolo> _listaTriangoli;
         vector<Lato> _listaLati;
