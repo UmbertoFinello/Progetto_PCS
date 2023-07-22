@@ -86,10 +86,10 @@ namespace ProjectLibrary
         double my;
         double My;
         unsigned int counter = 0;
-        unsigned int result = 0;// {tipo, id lati o triangoli}
+        unsigned int result = 0;
         // ricerca esterno/interno
         unsigned int pointer = _hullBeginLato;
-        bool inizio = true; // variabile per non uscire alla prima iteraz.
+        bool inizio = true; // variabile per non uscire alla prima iterazione
         Punto v1;
         Punto v2;
         while((pointer != _hullBeginLato) || inizio){
@@ -133,12 +133,12 @@ namespace ProjectLibrary
             counter = 0;
             idPunti = (_listaTriangoli[idCorr])._vertici; //id dei punti del triangolo
             idLati  = (_listaTriangoli[idCorr])._lati; //id dei lati del triangolo
-            // verifico che il punto sia interno al triangolo considerato _A_
+            // verifico che il punto sia interno al triangolo considerato
 
             for(unsigned int i = 0; i<3; i++)
             {
                // passo dai punti perchè non ho la certezza che i lati siano ordinati
-               // bene per fareil prodotto vettoriale
+               // bene per fare il prodotto vettoriale
                v1 = _listaPunti[idPunti[(i+1)%3]]-_listaPunti[idPunti[i]];
                v2 = p - _listaPunti[idPunti[i]];
                mx = min(_listaPunti[idPunti[i]]._x, _listaPunti[idPunti[(i+1)%3]]._x) - Punto::geometricTol;
@@ -241,7 +241,7 @@ namespace ProjectLibrary
                     if(dist[0]<dist[1])
                        latcor = lat[0];
                     else
-                        latcor = lat[1];
+                       latcor = lat[1];
 
                 }
                 if((_listaLati[latcor]._listIdTr)[0] == idCorr)
@@ -269,7 +269,7 @@ namespace ProjectLibrary
         unsigned int l2;
         unsigned int id_nt; //id nuovo triangolo controllo
         while(!(_codaDelaunay.empty())){            
-            fc = _codaDelaunay.front(); //indice coda
+            fc = _codaDelaunay.front(); //fronte coda
             ix[0] = fc[1];
             vector<unsigned int> lat_cd;
             latcom = _listaLati[fc[0]]; //lato in comune
@@ -360,7 +360,7 @@ namespace ProjectLibrary
         unsigned int ilato = _hullBeginLato;
         bool inizio = true;
         Punto dir1 = newpoint - point;
-        unsigned int iv = 0;// variabile da passare perchè il costruttore è costante, tanto non ci interessa l'id di questo punto
+        unsigned int iv = 0;// id punto fittizio
         double alfa;
         double x_pt;
         double y_pt;
@@ -377,12 +377,11 @@ namespace ProjectLibrary
         while((_hullBeginLato != ilato) || inizio)
         {
             inizio = false;
-            // ricontrollare per l'antisimmetria del prodotto scalare
             dir2 = _listaLati[ilato]._p1 - _listaLati[ilato]._p2;
             dir3 = _listaLati[ilato]._p2 - point;
             if(abs(crossProduct(dir1,dir2)) > Punto::geometricTol)
             {
-                // pt è la slz del sistema lineare
+                // pt è la solizione del sistema lineare
                 alfa = (-dir2._y*dir3._x + dir2._x*dir3._y)/(dir1._y*dir2._x - dir1._x*dir2._y);
                 x_pt = point._x + alfa*dir1._x;
                 y_pt = point._y + alfa*dir1._y;
@@ -430,7 +429,6 @@ namespace ProjectLibrary
 
     void Mesh::CollegaSenzaIntersezioni(const Punto& nuovoPunto, unsigned int& id_t, unsigned int& id_l)
     {
-        //_listaPunti.push_back(nuovoPunto)
         // trovo il primo e l'ultimo lato utile
         unsigned int fineLato = _hullBeginLato;
         unsigned int inizioLato = _listaLati[_hullBeginLato]._prec;
@@ -458,7 +456,7 @@ namespace ProjectLibrary
                     inizioLato = _listaLati[inizioLato]._prec;
                     b = accettabile(nuovoPunto, _listaLati[inizioLato]._p1);
                 }
-                // in b abbiamo il primo false, il succ del puntato di b sarà il primo accettabile
+                // in inizioLato abbiamo il primo false, il succ di inizioLato sarà il primo accettabile
                 inizioLato = _listaLati[inizioLato]._succ;
             }
             else
