@@ -597,7 +597,7 @@ namespace ProjectLibrary
             (_listaLati[(tr._lati)[2]]._listIdTr)[1] = tng._id;
     }
 
-    void Mesh::PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt)
+    void Mesh::PuntoBordoTriangolo(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt)
     {
         unsigned int itr;
         unsigned int itx;
@@ -887,7 +887,7 @@ namespace ProjectLibrary
                         break;
                     }
                     case Posizione::LATO_DENTRO: {//sul bordo del triangolo
-                        this->PuntoBordoTriang(po, id_result, idtriang, idlato);
+                        this->PuntoBordoTriangolo(po, id_result, idtriang, idlato);
                         break;
                     }
                     case Posizione::BORDO_HULL: {

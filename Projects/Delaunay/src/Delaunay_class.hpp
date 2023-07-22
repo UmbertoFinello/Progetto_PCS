@@ -142,7 +142,7 @@ namespace ProjectLibrary
         bool accettabile(const Punto& pnew, const Punto& v);
         unsigned int DentroMesh(const Punto& p, Posizione& DM);
         void PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt);
-        void PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
+        void PuntoBordoTriangolo(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);
         void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt);        
     public:
         Mesh(const vector<Punto>& listaPunti);

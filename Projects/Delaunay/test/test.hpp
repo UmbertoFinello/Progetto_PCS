@@ -66,8 +66,8 @@ public:
     bool accettabile(const Punto& pnew, const Punto& v){return Mesh::accettabile(pnew,v);}
     void PuntoInterno(const Punto& po, unsigned int& itr, unsigned int& id_tr, unsigned int& id_lt){
         Mesh::PuntoInterno(po, itr, id_tr, id_lt);}
-    void PuntoBordoTriang(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt){
-        Mesh::PuntoBordoTriang(po, ilt, id_tr, id_lt);}
+    void PuntoBordoTriangolo(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt){
+        Mesh::PuntoBordoTriangolo(po, ilt, id_tr, id_lt);}
     void PuntoBordoHull(const Punto& po, unsigned int& ilt, unsigned int& id_tr, unsigned int& id_lt){
         Mesh::PuntoBordoHull(po, ilt, id_tr, id_lt);}
     string Show(){return Mesh::Show();}
@@ -394,7 +394,7 @@ TEST(TestClasseMesh, TestPuntoInterno)
     EXPECT_EQ(sCD, vero_CD);
 }
 
-TEST(TestClasseMesh, TestPuntoBordoTriang)
+TEST(TestClasseMesh, TestPuntoBordoTriangolo)
 {
     MeshTest m = MeshTest();
     unsigned int id_t = 0;
@@ -441,7 +441,7 @@ TEST(TestClasseMesh, TestPuntoBordoTriang)
     m.LTR() = {t1, t2, t3};
     m.LP() = {p1, p2, p3, p4, p5, p6};
     m.LL() = {l1, l2, l3, l4, l5, l6, l7};
-    m.PuntoBordoTriang(p6, idl2, id_t, idl);
+    m.PuntoBordoTriangolo(p6, idl2, id_t, idl);
     string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.000000 1.000000\n"
                   "3 1.000000 1.000000\n4 -1.000000 -1.000000\n5 0.500000 0.500000\nLati\n"
                   "Id p1 p2 Length TriangoliAdiacenti\n0 0 1 1.000000 0,2\n1 5 0 0.707107 0,3\n"
@@ -2115,13 +2115,13 @@ TEST(TestClassMesh, TestCostruttoreMesh)
 
     string vero_mesh = "Punti\nId x y\n0 0.000000 0.000000\n1 1.000000 0.000000\n2 0.500000 0.000000\n"
                        "3 3.000000 3.000000\n4 4.000000 2.000000\n5 1.000000 2.000000\nLati\n"
-                       "Id p1 p2 Length TriangoliAdiacenti\n0 3 5 2.236068 0\n1 5 1 2.000000 3,2\n"
-                       "2 4 5 3.000000 3,0\n3 5 0 2.236068 1\n4 0 2 0.500000 1\n5 2 5 2.061553 1,2\n"
-                       "6 2 1 0.500000 2\n7 1 4 3.605551 3\n8 4 3 1.414214 0\nTriangoli\nId p1 p2 p3 l1 l2 l3\n"
-                       "0 3 5 4 0 2 8\n1 0 2 5 4 5 3\n2 2 1 5 6 1 5\n3 1 4 5 7 2 1\n";
+                       "Id p1 p2 Length TriangoliAdiacenti\n0 1 5 2.000000 2,0\n1 4 5 3.000000 0,3\n"
+                       "2 5 0 2.236068 1\n3 0 2 0.500000 1\n4 1 4 3.605551 0\n5 2 5 2.061553 1,2\n"
+                       "6 2 1 0.500000 2\n7 4 3 1.414214 3\n8 3 5 2.236068 3\nTriangoli\nId p1 p2 p3 l1 l2 l3\n"
+                       "0 4 5 1 1 0 4\n1 0 2 5 3 5 2\n2 2 1 5 6 0 5\n3 4 3 5 7 8 1\n";
     EXPECT_EQ(mh.Show(), vero_mesh);
 
-    string vero_Hull_succ = " 0 3 4 6 7 8 0";
+    string vero_Hull_succ = " 2 3 6 4 7 8 2";
     unsigned int entra = 0;
     unsigned int i = mh.HB();
     string sHull_succ = "";
@@ -2132,7 +2132,7 @@ TEST(TestClassMesh, TestCostruttoreMesh)
         LatoTest a = (mh.LL())[i];
         i = a.Succ();
     }
-    string vero_Hull_prec = " 0 8 7 6 4 3 0";
+    string vero_Hull_prec = " 2 8 7 4 6 3 2";
     entra = 0;
     i = mh.HB();
     string sHull_prec = "";
